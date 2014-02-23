@@ -1,6 +1,8 @@
 <?php
 
 require_once('../../system.php');
+execute();
+
 DBinit('rss.module');
 
 $title = 'Сайт ' . $_SERVER['SERVER_NAME'];

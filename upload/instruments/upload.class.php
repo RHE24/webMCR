@@ -40,7 +40,7 @@ Class File extends View
 
         parent::View($style_sd);
 
-        $this->base_dir = MCRAFT . 'userdata/';
+        $this->base_dir = getWay('upload');
         $this->db = $bd_names['files'];
 
         $search_by = 'id';
@@ -359,11 +359,11 @@ Class FileManager extends View
 
         while ($line = $result->fetch('num')) {
 
-            $file = new File($line[0], $this->st_subdir);
+            $file = new File($line[0], $this->getSubDir());
             $html_files .= $file->Show();
         }
 
-        $html_files .= $this->arrowsGenerator($this->work_skript, $list, $num, 10);
+        $html_files .= $this->showArrows($this->work_skript, $list, $num, 10);
         return $html_files;
     }
 

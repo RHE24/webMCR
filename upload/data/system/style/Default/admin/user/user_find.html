@@ -1,0 +1,38 @@
+<div class="block-header">Управление пользователями</div> 
+<div class="block-line"></div>
+
+<form action="index.php" method="get" class="form-inline">
+
+    <input type="hidden" name="mode" value="control" />
+    <input type="hidden" name="do" value="search" />
+
+    <input type="text" name="name" class="input-small" placeholder="Логин">
+    <input type="text" name="ip" class="input-small" placeholder="IP">
+
+    <select id="group" name="group">
+        <option value="-1">Любая группа</option>
+        <?php echo GroupManager::GetList() ?>
+    </select>   
+
+    <button type="submit" class="btn">Найти</button>
+
+</form>
+
+<table class="table" id="mainTable">
+    <tr class="topRow">
+        <td>Группа</td>
+        <td>Логин</td>
+        <td>IP</td>
+        <td>Действия</td>
+    </tr>
+    
+    
+    <?php if(!$list) : ?>    
+    
+    <tr>
+       <td colspan="5">Ни одного пользователя не найдено</td>
+    </tr>    
+    
+    <?php else : echo $list; endif; ?>
+    
+</table>

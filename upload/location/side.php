@@ -4,9 +4,7 @@ if (!defined('MCR')) exit;
 ob_start();
 
 if (!empty($user)) {
-  
-   if ($mode == 'control') 
-   include View::Get('side.html', 'admin/');  
+   
    include View::Get('mini_profile.html');    
 	
 } else {
@@ -18,10 +16,9 @@ if (!empty($user)) {
 
 $content_side .= ob_get_clean();
 
-loadTool('monitoring.class.php');
+loadTool('server.class.php', 'craft/monitoring/');
 
 $servManager = new ServerManager('serverstate/');
 $content_servers = $servManager->Show('side');
 
 unset($servManager);
-?>

@@ -3,29 +3,32 @@ DefaultLanguage ru-RU
 
 Options -Indexes
 
-php_flag register_globals off
+# php_flag register_globals off
 
 <IfModule mod_rewrite.c>
-SetEnv HTTP_MOD_REWRITE On
 
-RewriteEngine on
+    SetEnv HTTP_MOD_REWRITE On
 
-RewriteRule ^news/([^/]+)/?$ index.php?id=$1 [L,NE]
-RewriteRule ^category/([^/]+)/?$ index.php?cid=$1 [L,NE]
-RewriteRule ^list/([^/]+)/?$ index.php?l=$1 [L,NE]
-RewriteRule ^control/([^/]+)/?$ index.php?mode=control&do=$1 [L,NE]
+    RewriteEngine on
 
-RewriteRule ^get/([^/]+)/?$ action.php?method=download&file=$1 [L,NE]
+    RewriteRule ^news/([^/]+)/?$ index.php?id=$1 [L,NE]
+    RewriteRule ^category/([^/]+)/?$ index.php?cid=$1 [L,NE]
+    RewriteRule ^list/([^/]+)/?$ index.php?l=$1 [L,NE]
+    RewriteRule ^control/([^/]+)/?$ index.php?mode=control&do=$1 [L,NE]
+    RewriteRule ^get/([^/]+)/?$ action.php?method=download&file=$1 [L,NE]
+    RewriteRule ^go/([^/]+)/?$ index.php?mode=$1 [L,NE]
 
-RewriteRule ^go/([^/]+)/?$ index.php?mode=$1 [L,NE]
+    RewriteRule  ^MineCraft/auth.php instruments/craft/auth/auth.php [L]
+    RewriteRule  ^MineCraft/checkserver.php instruments/craft/auth/checkserver.php [L]
+    RewriteRule  ^MineCraft/joinserver.php instruments/craft/auth/joinserver.php [L] 
 
+    RewriteRule  ^authenticate$ instruments/MineCraft/auth/auth16x.php [L]
+    RewriteRule  ^invalidate$ instruments/MineCraft/auth/invalidate16x.php [L]
+    RewriteRule  ^refresh$ instruments/MineCraft/auth/refresh16x.php [L]
+    RewriteRule  ^game/joinserver.jsp instruments/MineCraft/auth/joinserver.php [L,NE]
 
-RewriteRule  ^authenticate$ MineCraft/auth16x.php [L]
-RewriteRule  ^invalidate$ MineCraft/invalidate16x.php [L]
-RewriteRule  ^refresh$ MineCraft/refresh16x.php [L]
-RewriteRule  ^game/joinserver.jsp MineCraft/joinserver.php [L,NE]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule .* index.php?mode=404&route=%{REQUEST_URI} [L,QSA]
 
-RewriteCond %{SCRIPT_FILENAME} !-f
-RewriteCond %{SCRIPT_FILENAME} !-d
-RewriteRule ^(.*)$ index.php?mode=404&route=%{REQUEST_URI}
 </IfModule>

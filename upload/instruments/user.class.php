@@ -3,8 +3,8 @@ if (!defined('MCR')) exit;
 
 /* User class | User group class */
 
-Class User {
-    
+class User 
+{    
     private $db;
     private $id = false;
     private $permissions = null;
@@ -77,6 +77,8 @@ Class User {
         $this->ip = $line[$bd_users['ip']];
 
         $this->email = $line[$bd_users['email']];
+        if (empty($this->email)) $this->email = false;
+        
         $this->deadtry = (int) $line[$bd_users['deadtry']];
 
         /* Пол персонажа */
@@ -115,22 +117,23 @@ Class User {
 
     public function authenticate($pass)
     {
-        global $bd_users;
+        global $bd_users, $config;
 
         if (!$this->id)
             return false;
-
+        
+        if ($config['remote']) {
+            loadTool('auth.php', 'auth/remote/');
+            
+            $remoteAuth = new RemoteAuth();
+            return $remoteAuth->authenticate($pass, $this);
+        }
+        
         $sql = "SELECT `{$bd_users['password']}` FROM `{$this->db}` "
                 . "WHERE `{$bd_users['id']}`='" . $this->id . "'";
         $line = getDB()->fetchRow($sql, false, 'num');
 
-        $auth_info = array('pass_db' => $line[0],
-            'pass' => $pass,
-            'user_id' => $this->id,
-            'user_name' => $this->name
-        );
-
-        $test_pass = MCRAuth::checkPass($auth_info);
+        $test_pass = AuthCore::getEncoder()->checkPass($line[0], $pass, $this);
 
         if (!$test_pass) {
 
@@ -138,22 +141,21 @@ Class User {
                     . "WHERE `{$bd_users['id']}`='" . $this->id . "'");
 
             $this->deadtry++;
-        }
-
+        }  
+        
         return ($test_pass) ? true : false;
     }
 
-    public function login($tmp, $ip, $save = false)
+    public function login($save = false)
     {
-        global $bd_users, $config;
+        global $bd_users;
 
         if (!$this->id)
             return false;
-
+        
+        $ip = GetRealIp();
         $save = ($save) ? true : false;
-
-        if ($config['p_logic'] != 'usual' and $config['p_sync'])
-            MCMSAuth::login($this->id());
+        $tmp = randString(15);
 
         $sql = "UPDATE `{$this->db}` SET `{$bd_users['deadtry']}` = '0', "
                 . "`{$bd_users['tmp']}`=:tmp, "
@@ -172,18 +174,16 @@ Class User {
         $_SESSION['ip'] = $this->ip();
 
         if ($save)
-            setcookie("PRTCookie1", $tmp, time() + 60 * 60 * 24 * 30 * 12, '/');
-
+            setcookie("webMCRCookie", $tmp, time() + 60 * 60 * 24 * 30 * 12, '/');
+        
+        AuthCore::getLoader()->onUserLogin($this);        
         return true;
     }
 
     public function logout()
     {
-        global $bd_users, $config;
-
-        if ($config['p_logic'] != 'usual' and $config['p_sync'])
-            MCMSAuth::logout();
-
+        global $bd_users;
+        
         if (!isset($_SESSION))
             session_start();
         if (isset($_SESSION))
@@ -196,8 +196,10 @@ Class User {
 
         getDB()->ask($sql);
 
-        if (isset($_COOKIE['PRTCookie1']))
-            setcookie("PRTCookie1", "", time() - 3600);
+        if (isset($_COOKIE['webMCRCookie']))
+            setcookie("webMCRCookie", "", time() - 3600);
+        
+        AuthCore::getLoader()->onUserLogout($this);
     }
 
     public function canPostComment()
@@ -273,7 +275,7 @@ Class User {
 
     public function getStatisticTime($param)
     {
-        global $bd_users, $config;
+        global $bd_users;
 
         if (!$this->id)
             return false;
@@ -289,9 +291,8 @@ Class User {
 
         if ($line) {
 
-            if ($config['p_logic'] == 'xenforo' or
-                    $config['p_logic'] == 'ipb' or
-                    $config['p_logic'] == 'dle')
+            if (is_numeric($line[$param]))
+                
                 return date('Y-m-d H:i:s', (int) $line[$param]); // from UNIX time		
 
             return $line[$param];
@@ -391,14 +392,12 @@ Class User {
 
     public function getSkinFName()
     {
-        global $site_ways;
-        return MCRAFT . $site_ways['skins'] . $this->name . '.png';
+        return getWay('skins') . $this->name . '.png';
     }
 
     public function getCloakFName()
     {
-        global $site_ways;
-        return MCRAFT . $site_ways['cloaks'] . $this->name . '.png';
+        return getWay('cloaks') . $this->name . '.png';
     }
 
     public function getGroupName()
@@ -425,16 +424,15 @@ Class User {
         }
     }
 
-    public function defaultSkinMD5()
+    public function getDefSkinMD5()
     {
-
         if (!$this->id)
             return false;
 
-        $def_dir = MCRAFT . 'tmp/default_skins/';
+        $def_dir = getWay('tmp') . 'defaultSkins/';
 
         if ($this->isFemale())
-            $default_skin_md5 = $def_dir . 'md5_female.md5';
+            $default_skin_md5 = $def_dir . 'md5Female.md5';
         else
             $default_skin_md5 = $def_dir . 'md5.md5';
 
@@ -450,9 +448,9 @@ Class User {
         }
 
         if ($this->isFemale())
-            $default_skin = $def_dir . 'Char_female.png';
+            $default_skin = $def_dir . 'charFemale.png';
         else
-            $default_skin = $def_dir . 'Char.png';
+            $default_skin = $def_dir . 'char.png';
 
         if (file_exists($default_skin)) {
 
@@ -475,46 +473,44 @@ Class User {
             return false;
         }
     }
-
-    public function defaultSkinTrigger($new_value = -1)
+    
+    public function setDefSkinTrg($state) 
+    {
+        global $bd_users;        
+        if (!$this->exist()) return false;
+        
+        $state = ($state) ? 1 : 0;        
+        if (getDB()->ask("UPDATE `{$this->db}` SET `default_skin`='$state' WHERE `{$bd_users['id']}`='{$this->id()}'")) return true;        
+        return false;               
+    }
+ 
+    public function getDefSkinTrg()
     { 
         global $bd_users;
+        if (!$this->exist()) return false;
 
-        if (!$this->id)
-            return false;
+        $line = getDB()->fetchRow("SELECT `default_skin` FROM `{$this->db}` "
+                . "WHERE `{$bd_users['id']}`='{$this->id()}'", false, 'num');
 
-        if ($new_value < 0) {
-
-            $line = getDB()->fetchRow("SELECT `default_skin` FROM `{$this->db}` "
-                    . "WHERE `{$bd_users['id']}`='{$this->id()}'", false, 'num');
-
-            $isDefault = (int) $line[0];
+        $isDefault = (int) $line[0];
+        if (!file_exists($this->getSkinFName())) {
+            $this->setDefaultSkin();
+            return true;            
+        } elseif ($isDefault == 2) {      
         
-            if (!file_exists($this->getSkinFName())) {
-                $this->setDefaultSkin(); 
-                return true;
-            } elseif ($isDefault == 2) { 
-                $isDefault = false;            
-                if (!strcmp($this->defaultSkinMD5(), md5_file($this->getSkinFName())))
-                    $isDefault = true;   
-
-                getDB()->ask("UPDATE `{$this->db}` SET `default_skin`='$isDefault' "
-                        . "WHERE `{$bd_users['id']}`='{$this->id()}'");
-            }
-            return ($isDefault) ? true : false;
+            $isDefault = false;            
+            if (!strcmp($this->getDefSkinMD5(), md5_file($this->getSkinFName())))
+                $isDefault = true;
+                
+            $this->setDefSkinTrg($isDefault);
         }
-
-        $new_value = ($new_value) ? 1 : 0;
-
-        getDB()->ask("UPDATE `{$this->db}` SET `default_skin`='$new_value' WHERE `{$bd_users['id']}`='{$this->id()}'");
-
-        return ($new_value) ? true : false;
+        return ($isDefault) ? true : false;
     }
 
     public function deleteBuffer()
     {
-        $mini = MCRAFT . 'tmp/skin_buffer/' . $this->name . '_Mini.png';
-        $skin = MCRAFT . 'tmp/skin_buffer/' . $this->name . '.png';
+        $mini = getWay('tmp') . 'skinBuffer/' . $this->name . 'Mini.png';
+        $skin = getWay('tmp') . 'skinBuffer/' . $this->name . '.png';
 
         if (file_exists($mini))
             unlink($mini);
@@ -524,30 +520,29 @@ Class User {
 
     public function setDefaultSkin()
     {
-
         if (!$this->id)
             return 0;
 
         $this->deleteSkin();
 
-        $default_skin = MCRAFT . 'tmp/default_skins/Char' . (($this->isFemale()) ? '_female' : '') . '.png';
+        $default_skin = getWay('tmp') . 'defaultSkins/char' . (($this->isFemale()) ? 'Female' : '') . '.png';
 
         if (!copy($default_skin, $this->getSkinFName()))
             vtxtlog('[SetDefaultSkin] error while COPY default skin for new user.');
         else
-            $this->defaultSkinTrigger(true);
+            $this->setDefSkinTrg(true);
 
         return 1;
     }
 
     public function changeName($newname)
     {
-        global $bd_users, $site_ways;
+        global $bd_users;
 
         if (!$this->id)
             return 0;
 
-        $newname = trim($newname);
+        $newname = Filter::str($newname);
 
         if (!preg_match("/^[a-zA-Z0-9_-]+$/", $newname))
             return 1401;
@@ -570,21 +565,21 @@ Class User {
         /* Переименование файла скина и плаща */
 
         $way_tmp_old = $this->getSkinFName();
-        $way_tmp_new = MCRAFT . $site_ways['skins'] . $newname . '.png';
+        $way_tmp_new = getWay('skins') . $newname . '.png';
 
         if (file_exists($way_tmp_old) and !file_exists($way_tmp_new))
             rename($way_tmp_old, $way_tmp_new);
 
         $way_tmp_old = $this->getCloakFName();
-        $way_tmp_new = MCRAFT . $site_ways['cloaks'] . $newname . '.png';
+        $way_tmp_new = getWay('cloaks') . $newname . '.png';
 
         if (file_exists($way_tmp_old) and !file_exists($way_tmp_new))
             rename($way_tmp_old, $way_tmp_new);
 
-        $buff_mini = MCRAFT . 'tmp/skin_buffer/' . $this->name . '_Mini.png';
-        $buff_mini_new = MCRAFT . 'tmp/skin_buffer/' . $newname . '.png';
-        $buff_skin = MCRAFT . 'tmp/skin_buffer/' . $this->name . '.png';
-        $buff_skin_new = MCRAFT . 'tmp/skin_buffer/' . $newname . '.png';
+        $buff_mini = getWay('tmp') . 'skinBuffer/' . $this->name . 'Mini.png';
+        $buff_mini_new = getWay('tmp') . 'skinBuffer/' . $newname . '.png';
+        $buff_skin = getWay('tmp') . 'skinBuffer/' . $this->name . '.png';
+        $buff_skin_new = getWay('tmp') . 'skinBuffer/' . $newname . '.png';
 
         if (file_exists($buff_mini))
             rename($buff_mini, $buff_mini_new);
@@ -603,7 +598,7 @@ Class User {
         if (!$this->id)
             return 0;
 
-        if (!is_bool($repass)) {
+        if ($repass !== false) {
 
             if (strcmp($repass, $newpass))
                 return 1504;
@@ -616,26 +611,23 @@ Class User {
             $line = getDB()->fetchRow("SELECT `{$bd_users['password']}` FROM `{$this->db}` "
                     . "WHERE `{$bd_users['id']}`='{$this->id}'", false, 'num');
 
-            if ($line == NULL or
-                !MCRAuth::checkPass(array(
-                    'pass_db' => $line[0],
-                    'pass' => $pass,
-                    'user_id' => $this->id,
-                    'user_name' => $this->name
-                )))
-                return 1502;
+            if ($line == null or
+                !AuthCore::getEncoder()->checkPass($line[0], $pass, $this))
+                return 1502;            
+
+            $minlen = 4;
+            $maxlen = 15;
+            $len = strlen($newpass);
+
+            if (($len < $minlen) or ($len > $maxlen))
+                return 1503;
         }
-
-        $minlen = 4;
-        $maxlen = 15;
-        $len = strlen($newpass);
-
-        if (($len < $minlen) or ($len > $maxlen))
-            return 1503;
-
+        
+        $password = AuthCore::getEncoder()->createPass($newpass, $this);
+        
         getDB()->ask("UPDATE `{$this->db}` "
-                . "SET `{$bd_users['password']}`='" . MCRAuth::createPass($newpass) . "' "
-                . "WHERE `{$bd_users['id']}`='{$this->id}'");
+                . "SET `{$bd_users['password']}`=:password "
+                . "WHERE `{$bd_users['id']}`='{$this->id}'", array('password' => $password));
 
         return 1;
     }
@@ -739,7 +731,6 @@ Class User {
     public function getSkinLink($mini = false, $amp = '&amp;', $refresh = false)
     {
         global $config;
-        
         if ($this->exist() === false) return '';
         
         $female = ($this->isFemale()) ? '1' : '0';
@@ -747,7 +738,7 @@ Class User {
 
         if ($mini == true) $get_p .= 'm=1' . $amp;
         
-        if ($this->defaultSkinTrigger() and ($mini or !file_exists($this->getCloakFName())))
+        if ($this->getDefSkinTrg() and ($mini or !file_exists($this->getCloakFName())))
             $get_p .= 'female=' . $female;
         else
             $get_p .= 'user_name=' . $this->name();
@@ -767,14 +758,12 @@ Class User {
 
         if (!POSTGood($post_name))
             return 1604;
-
-        $tmp_dir = MCRAFT . 'tmp/';
-
-        $new_file_info = POSTSafeMove($post_name, $tmp_dir);
+        
+        $new_file_info = POSTSafeMove($post_name, getWay('tmp'));
         if (!$new_file_info)
             return 1610;
 
-        $way = $tmp_dir . $new_file_info['tmp_name'];
+        $way = $new_file_info['tmp_way'];
 
         if ((int) $this->getPermission('max_fsize') < $new_file_info['size_mb'] * 1024) {
 
@@ -786,7 +775,7 @@ Class User {
 
         $newImgInfo = ($type == 'skin') ? SkinViewer2D::isValidSkin($way) : SkinViewer2D::isValidCloak($way);
         if (!$newImgInfo['scale'] or $newImgInfo['scale'] > (int) $this->getPermission('max_ratio')) {
-
+            vtxtlog($newImgInfo['scale']);
             unlink($way);
             return 1602;
         }
@@ -805,10 +794,10 @@ Class User {
 
         if ($type == 'skin') {
 
-            if (!strcmp($this->defaultSkinMD5(), md5_file($this->getSkinFName())))
-                $this->defaultSkinTrigger(true);
+            if (!strcmp($this->getDefSkinMD5(), md5_file($this->getSkinFName())))
+                $this->setDefSkinTrg(true);
             else
-                $this->defaultSkinTrigger(false);
+                $this->setDefSkinTrg(false);
         }
 
         $this->deleteBuffer();
@@ -892,7 +881,7 @@ Class User {
         return $this->gender;
     }
 
-    public function Exist()
+    public function exist()
     {
         if ($this->id)
             return true;
@@ -1166,5 +1155,4 @@ class GroupManager
         else
             return $grp_name;
     }
-
 }

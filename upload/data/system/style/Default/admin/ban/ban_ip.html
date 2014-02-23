@@ -1,0 +1,18 @@
+<form action="index.php?mode=control&amp;do=banip" method="post">
+    
+    <?php echo tokenTool('setinput') ?>
+    
+    <fieldset>
+        <legend>Заблокировать IP</legend>
+        
+        <label>IP:</label>
+        <input type="text" name="ip" value="<?php echo Filter::input('ip', 'get') ?>">        
+
+        <label>Срок блокировки (в днях):</label>
+        <input type="text" name="days" maxlength="3">  
+        
+        <button type="submit" class="btn">Применить</button>
+        
+    </fieldset>
+    
+</form>

@@ -1,12 +1,13 @@
 <?php
 require('./system.php');
+execute();
 
 $login = Filter::input('login');
 $out = Filter::input('out', 'get', 'bool');
 
 if (!$out and !$login)
     exit;
-
+    
 loadTool('ajax.php');
 loadTool('user.class.php');
 
@@ -15,9 +16,10 @@ DBinit('login');
 if ($out) {
 
     header("Location: " . BASE_URL);
-    MCRAuth::userLoad();
+    $user = AuthCore::getLoader()->userLoad();
     if (!empty($user))
         $user->logout();
+    
 } elseif ($login) {
     
     $pass = Filter::input('pass');
@@ -39,6 +41,6 @@ if ($out) {
     if ($tmp_user->lvl() <= 0)
         aExit(4, lng('USER_BANNED'));
 
-    $tmp_user->login(randString(15), GetRealIp(), Filter::input('save', 'post', 'bool'));
+    $tmp_user->login(Filter::input('save', 'post', 'bool'));
     aExit(0, 'success');
 }

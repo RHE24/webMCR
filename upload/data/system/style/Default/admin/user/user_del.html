@@ -1,0 +1,15 @@
+<form action="index.php?mode=control&amp;do=user_delete" method="post">
+
+    <input type="hidden" name="confirm" value="1" />											
+    <input type="hidden" name="user_id" value="<?php echo $user_id; ?>" />	
+    
+    <?php echo tokenTool('setinput') ?>
+
+    <p>Пользователь <b><?php echo $user_name; ?></b> будет УДАЛЕН</p>											
+    <p>Все комментарии оставленые пользователем будут удалены.</p>											
+    <p>Подтвердите действие</p>					 
+
+    <p><a class="btn" href="?mode=control" >Отмена</a></p>
+    <p><input type="submit" class="btn" value="ОК" /></p>
+
+</form>

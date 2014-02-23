@@ -1,40 +1,56 @@
 <?php
 
-error_reporting(E_ALL);
+function execute() 
+{  
+    global $config, 
+           $bd_names, 
+           $bd_money, 
+           $bd_users, 
+           $site_ways,
+           $user;
+    
+    error_reporting(E_ALL);
+    
+    define('MCR_ROOT', dirname(__FILE__) . '/');
+    
+    /**
+     * Check install
+     */
+    
+    if (file_exists(MCR_ROOT . 'data/system/config.php')) {
+        require(MCR_ROOT . 'data/system/config.php'); 
+    }
+    
+    if (empty($config) or isset($config['tmp_install'])) {
+    
+        $url = str_replace('\\', '/', $_SERVER['PHP_SELF']); 
+        $url = explode("index.php", $url, -1);
+        if (sizeof($url)) $url = $url[0];
+        else $url = '/';
+        
+        header('Location: ' . $url . 'install/install.php');
+        exit;   
+    } 
+    
+    /**
+     * Load base classes
+     */
 
-$user = false;
-$link = false;
-
-$mcr_tools = array();
-
-define('MCR_ROOT', dirname(__FILE__) . '/');
-define('MCR_LANG', 'ru_RU');
-
-loadTool('base.class.php');
-
-if (!file_exists(MCR_ROOT . 'config.php')) {
-    header("Location: install/install.php");
-    exit;
+    loadTool('base.class.php');
+    loadTool('auth.class.php', 'auth/');    
+    
+    define('MCR_LANG', 'ru');
+    define('MCR_STYLE', getWay('style'));
+    define('STYLE_URL', $site_ways['style']); // deprecated
+    define('DEF_STYLE_URL', STYLE_URL . View::DEFAULT_THEME . '/');
+    define('BASE_URL', $config['s_root']);   
+    
+    date_default_timezone_set($config['timezone']);
+    
+    require(getWay('system') . 'locale/' . MCR_LANG.'.php');
+    
+    AuthCore::setDriver($config['p_logic'], $config['p_encode']);
 }
-
-require(MCR_ROOT . 'instruments/locale/' . MCR_LANG . '.php');
-require(MCR_ROOT . 'config.php');
-
-if (!isset($config['db_driver'])) {
-    $config['db_driver'] = 'mysql';
-}
-
-require(MCR_ROOT . 'instruments/auth/' . $config['p_logic'] . '.php');
-
-define('MCRAFT', MCR_ROOT . $site_ways['mcraft']);
-define('MCR_STYLE', MCR_ROOT . $site_ways['style']);
-
-define('STYLE_URL', $site_ways['style']); // deprecated
-define('DEF_STYLE_URL', STYLE_URL . View::def_theme . '/');
-
-define('BASE_URL', $config['s_root']);
-
-date_default_timezone_set($config['timezone']);
 
 /**
  * @deprecated since v2.35
@@ -48,20 +64,28 @@ function BD($query)
 /**
  * @deprecated since v2.35
  */
-function BDConnect($log_script = 'default')
+function BDConnect($logScript = 'default')
 {
     global $link;
-
-    if (!$link)
-        DBinit($log_script);
+    
+    if (empty($link)) {
+        DBinit($logScript);
+    }
 }
 
-function DBinit($log_script = 'default')
+ /**
+  * Load DB API classes and connect to MySQL database with check ban by IP
+  */ 
+ 
+function DBinit($logScript = 'default', $accessCheck = true, $exitOnFail = true)
 {
     global $link, $config;
 
-    if ($link)
-        return;
+    if (!empty($link)) return;    
+
+    if (!isset($config['db_driver'])) {
+        $config['db_driver'] = 'mysql';
+    }
     
     loadTool('databaseInterface.class.php', 'database/');
     loadTool('statementInterface.class.php', 'database/');
@@ -77,29 +101,24 @@ function DBinit($log_script = 'default')
     $class = $config['db_driver'] . 'Driver';
     $link = new $class();
 
-    try {    
-        if (!empty($config['db_file'])) {
-        
-            $link->connect(array('file' => $config['db_file']));
-            
-        } else {
-        
-            $link->connect(array(
-                'host' => $config['db_host'], 
-                'port' => $config['db_port'], 
-                'login' => $config['db_login'], 
-                'password' => $config['db_passw'], 
-                'db' => $config['db_name']
-            ));        
-        }        
+    try { 
+        $link->connect(array(
+            'host' => $config['db_host'], 
+            'port' => $config['db_port'], 
+            'login' => $config['db_login'], 
+            'password' => $config['db_passw'], 
+            'db' => $config['db_name']
+        ));         
     } catch (Exception $e) {
-        exit($e->getMessage());
+        if ($exitOnFail) exit($e->getMessage());
+        else return $e->getMessage();
     }
 
-    if ($log_script and $config['action_log'])
-        ActionLog($log_script);
+    if ($logScript and $config['action_log'])
+        ActionLog($logScript);
         
-    CanAccess(2);
+    if ($accessCheck) CanAccess(2);
+    return true;    
 }
 
 /**
@@ -110,8 +129,8 @@ function DBinit($log_script = 'default')
 function getDB()
 {
     global $link;
-
-    if ($link === false) {
+    
+    if (empty($link)) {
         DBinit();
     }
 
@@ -120,16 +139,25 @@ function getDB()
 
 /* Системные функции */
 
-function loadTool($name, $sub_dir = '')
+function loadTool($name, $subDir = '')
 {
-    global $mcr_tools;
-
-    if (in_array($name, $mcr_tools))
+    global $mcrTools;
+    
+    if (!isset($mcrTools)) $mcrTools = array();
+    
+    if (in_array($name, $mcrTools))
         return;
 
-    $mcr_tools[] = $name;
+    $mcrTools[] = $name;
 
-    require( MCR_ROOT . 'instruments/' . $sub_dir . $name);
+    require( MCR_ROOT . 'instruments/' . $subDir . $name);
+}
+
+function getWay($id) 
+{
+    global $site_ways;
+    
+    return isset($site_ways[$id]) ? MCR_ROOT . $site_ways[$id] : false;
 }
 
 function lng($key, $lang = false)
@@ -137,18 +165,6 @@ function lng($key, $lang = false)
     global $MCR_LANG;
 
     return isset($MCR_LANG[$key]) ? $MCR_LANG[$key] : $key;
-}
-
-function tmp_name($folder, $pre = '', $ext = 'tmp')
-{
-    $name = $pre . time() . '_';
-
-    for ($i = 0; $i < 8; $i++)
-        $name .= chr(rand(97, 121));
-
-    $name .= '.' . $ext;
-
-    return (file_exists($folder . $name)) ? tmp_name($folder, $pre, $ext) : $name;
 }
 
 function POSTGood($post_name, $format = array('png'))
@@ -172,19 +188,27 @@ function POSTSafeMove($post_name, $tmp_dir = false)
         return false;
 
     if (!$tmp_dir)
-        $tmp_dir = MCRAFT . 'tmp/';
+        $tmp_dir = getWay('tmp');
 
     if (!is_dir($tmp_dir))
         mkdir($tmp_dir, 0777);
 
-    $tmp_file = tmp_name($tmp_dir);
-    if (!move_uploaded_file($_FILES[$post_name]['tmp_name'], $tmp_dir . $tmp_file)) {
-
-        vtxtlog('[POSTSafeMove] --> "' . $tmp_dir . '" <-- ' . lng('WRITE_FAIL'));
+    $tmp_file = tempnam($tmp_dir, 'tmp');
+    
+    if ($tmp_file === false or 
+        !move_uploaded_file($_FILES[$post_name]['tmp_name'], $tmp_file)) {
+        
+        if ($tmp_file) unlink($tmp_file);
+        vtxtlog('[POSTSafeMove] --> "' . $tmp_file . '" <-- ' . lng('WRITE_FAIL'));
         return false;
     }
 
-    return array('tmp_name' => $tmp_file, 'name' => $_FILES[$post_name]['name'], 'size_mb' => round($_FILES[$post_name]['size'] / 1024 / 1024, 2));
+    return array(
+        'tmp_name' => basename($tmp_file), 
+        'tmp_way' => $tmp_file,
+        'name' => $_FILES[$post_name]['name'], 
+        'size_mb' => round($_FILES[$post_name]['size'] / 1024 / 1024, 2)
+    );
 }
 
 function randString($pass_len = 50)
@@ -270,7 +294,7 @@ function vtxtlog($string)
     if (!$config['log'])
         return;
 
-    $log_file = MCR_ROOT . 'log.txt';
+    $log_file = getWay('system') . 'log.txt';
 
     if (file_exists($log_file) and round(filesize($log_file) / 1048576) >= 50)
         unlink($log_file);
@@ -291,9 +315,12 @@ function tokenTool($mode = 'set')
     }
 
     if ($mode == 'check') {
+        
+        $token = Filter::input('token_data');
+        if (!$token) $token = Filter::input('token_data', 'get');
 
         if (empty($_SESSION['token_data']) or
-            $_SESSION['token_data'] !== Filter::input('token_data')) {
+            $_SESSION['token_data'] !== $token) {
 
             if (isset($_SESSION['token_data']))
                 unset($_SESSION['token_data']);
@@ -377,6 +404,5 @@ function CanAccess($ban_type = 1)
             exit('(-_-)zzZ <br>' . lng('IP_BANNED'));
         return false;
     }
-
     return true;
 }

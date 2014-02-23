@@ -1,10 +1,11 @@
 <?php
 /* WEB-APP : WebMCR (С) 2013-2014 NC22 | License : GPLv3 */
+
 require('./system.php');
+execute();
 
 $method = Filter::input('method', 'post', 'string', true);
 if ($method === false) $method = Filter::input('method', 'get', 'string', true);
-
 if (!$method) exit;
 
 switch ($method) {
@@ -17,6 +18,7 @@ switch ($method) {
     case 'like':
     case 'delete_file':
         
+        
         loadTool('ajax.php');
         loadTool('user.class.php');
 
@@ -24,17 +26,15 @@ switch ($method) {
             loadTool('upload.class.php');
         elseif ($method == 'profile')
             loadTool('skin.class.php');
-        elseif ($method == 'restore' and
-                $config['p_logic'] != 'usual' and
-                $config['p_logic'] != 'xauth' and
-                $config['p_logic'] != 'authme')
+        elseif ($method == 'restore' and !AuthCore::getEncoder()->isCheckOnly())
             aExit(1, 'Change password is not available');
 
         DBinit('action_' . $method);
-        MCRAuth::userLoad();
+        $user = AuthCore::getLoader()->userLoad();
 
         break;
     case 'download':
+        execute();
         loadTool('upload.class.php');
         DBinit('action_download');
 
@@ -260,7 +260,7 @@ switch ($method)
 
         if (empty($_FILES['new_skin']['tmp_name']) and
             $delete_skin and 
-            !$mod_user->defaultSkinTrigger() and 
+            !$mod_user->getDefSkinTrg() and 
             $user->getPermission('change_skin'))
            
             $rcodes[] = $mod_user->setDefaultSkin();
@@ -335,7 +335,7 @@ switch ($method)
         $ajax_message['mskin_link'] = $mod_user->getSkinLink(true, '&', true);
 
         if (file_exists($mod_user->getCloakFName())) $ajax_message['cloak'] = 1; 
-        if ($mod_user->defaultSkinTrigger())         $ajax_message['skin']  = 1; 
+        if ($mod_user->getDefSkinTrg())              $ajax_message['skin']  = 1; 
 
             if ($message) aExit(2, $message  ); // some bad news 
         elseif (!$rnum)  aExit(100, $message ); //nothing changed

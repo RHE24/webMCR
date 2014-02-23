@@ -65,7 +65,7 @@ if ($user->group() != 4) {
 
     if ($user->getPermission('change_skin'))
         include View::Get('profile_skin.html', $prefix);
-    if ($user->getPermission('change_skin') and !$user->defaultSkinTrigger())
+    if ($user->getPermission('change_skin') and !$user->getDefSkinTrg())
         include View::Get('profile_del_skin.html', $prefix);
     if ($user->getPermission('change_cloak'))
         include View::Get('profile_cloak.html', $prefix);

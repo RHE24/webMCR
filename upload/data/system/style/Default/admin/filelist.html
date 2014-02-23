@@ -1,0 +1,8 @@
+<p>Системные параметры, определенные сервером (php.ini) :</p>
+<p>Максимальный размер закачиваемого файла - <b><?php echo ini_get('upload_max_filesize') ?>b</b> (upload_max_filesize)</p> 
+<p>Максимально допустимый размер данных, отправляемых методом post - <b><?php echo ini_get('post_max_size') ?>b (post_max_size)</b></p>
+<p><i>Для картинок количество загрузок не учитывается.</i></p>
+
+<?php echo $fileAddForm ?>
+
+<?php echo $files ?>

@@ -74,13 +74,13 @@ class CommentList extends View
 
             while ( $line = $result->fetch('num') ) {
                
-                     $comments_item = new Comments_Item($line[0], $this->st_subdir);
+                     $comments_item = new Comments_Item($line[0], $this->getSubDir());
                      
                      $comments_html .= $comments_item->Show($user); 
                      unset($comments_item);
             }
             
-            $arrows_html = $this->arrowsGenerator($this->work_script, $list, $commentnum, $comm_pnum);		  
+            $arrows_html = $this->showArrows($this->work_script, $list, $commentnum, $comm_pnum);		  
 
         }		
 
@@ -222,7 +222,8 @@ class Comments_Item extends Item {
         if (!$this->Exist())
             return 'Error : comment';
 
-        $line = getDB()->fetchRow("SELECT DATE_FORMAT(time, '%d.%m.%Y | %H:%i:%S') AS time, message, item_id FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
+        $line = getDB()->fetchRow("SELECT DATE_FORMAT(time, '%d.%m.%Y | %H:%i:%S') "
+                . "AS time, message, item_id FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
         if (!$line)
             return '';
 
@@ -245,18 +246,18 @@ class Comments_Item extends Item {
         if ($for_user and ( $for_user->getPermission('adm_comm') or $for_user->id() == $this->user_id )) {
 
             ob_start();
-            include $this->GetView('comments_admin.html');
+            include $this->viewer->getView('comments_admin.html');
             $admin_buttons = ob_get_clean();
         }
 
         if ($user_female)
-            $female_mark = $this->ShowPage('comments_girl.html');
+            $female_mark = $this->viewer->showPage('comments_girl.html');
 
         ob_start();
         if ($for_user)
-            include $this->GetView('comments.html');
+            include $this->viewer->getView('comments.html');
         else
-            include $this->GetView('comments_unauth.html');
+            include $this->viewer->getView('comments_unauth.html');
 
         return ob_get_clean();
     }
@@ -288,5 +289,4 @@ class Comments_Item extends Item {
 
         return parent::Delete();
     }
-
 }

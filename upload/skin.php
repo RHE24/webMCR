@@ -2,6 +2,7 @@
 header("Content-type: image/png");
 
 require('./system.php');
+execute();
 
 $showMini = (Filter::input('mini', 'get', 'int') or Filter::input('m', 'get', 'bool')) ? true : false;
 $showByName = Filter::input('user_name', 'get', 'string', true);
@@ -25,20 +26,18 @@ if ($showByName or $userId or $isFemale !== false) {
 
 function ShowSkin($mini = false, $name = false, $isFemale = false, $saveBuffer = false)
 {   
-    global $site_ways;
-    
     loadTool('skin.class.php');
     
     if ($isFemale !== false) {
-        $cloak = false;
-        $skin = MCRAFT . 'tmp/skin_buffer/default/Char' . (($isFemale) ? '_female' : '') . '.png';
-        $buffer = MCRAFT . 'tmp/skin_buffer/default/Char' . ($mini ? '_Mini' : '') . ($isFemale ? '_female' : '') . '.png';
+        $cloak = null;
+        $skin = getWay('tmp') . 'defaultSkins/char' . (($isFemale) ? 'Female' : '') . '.png';
+        $buffer = getWay('tmp') . 'skinBuffer/default/char' . ($mini ? 'Mini' : '') . ($isFemale ? 'Female' : '') . '.png';
     } elseif ($name) {
-        $skin = MCRAFT . $site_ways['skins'] . $name . (($isFemale) ? '_female' : '') . '.png';
-        $cloak = MCRAFT . $site_ways['cloaks']  . $name . '.png';
-        $buffer = MCRAFT . 'tmp/skin_buffer/' . $name. ($mini ? '_Mini' : '') . '.png';
+        $skin = getWay('skins') . $name . (($isFemale) ? 'Female' : '') . '.png';
+        $cloak = getWay('cloaks') . $name . '.png';
+        $buffer = getWay('tmp') . 'skinBuffer/' . $name. ($mini ? 'Mini' : '') . '.png';
     } else exit;
-        
+    
     if (file_exists($buffer)) {
         readfile($buffer);
         exit;
@@ -49,4 +48,3 @@ function ShowSkin($mini = false, $name = false, $isFemale = false, $saveBuffer =
 
     if ($image) imagepng($image);
 }
-

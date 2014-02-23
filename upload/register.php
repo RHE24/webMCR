@@ -1,6 +1,7 @@
 <?php
 
 require('./system.php');
+execute();
 
 function CheckPostComplect()
 {
@@ -30,10 +31,10 @@ function CheckPostComplect()
 $input = CheckPostComplect();
 if (!$input['method'])
     exit;
-
+    
 loadTool('ajax.php');
 
-if ($config['p_logic'] != 'usual' and $config['p_logic'] != 'xauth' and $config['p_logic'] != 'authme')
+if (!AuthCore::getEncoder()->isCheckOnly())
     aExit(1, 'Registration is blocked. Used auth script from main CMS');
 
 DBinit('register');
@@ -152,15 +153,13 @@ else
 
 $sql = "INSERT INTO `{$bd_names['users']}` ("
         . "`{$bd_users['login']}`,"
-        . "`{$bd_users['password']}`,"
         . "`{$bd_users['ip']}`,"
         . "`{$bd_users['female']}`,"
         . "`{$bd_users['ctime']}`,"
-        . "`{$bd_users['group']}`) VALUES(:login, :pass, :ip, '$female', NOW(),'$group')";
+        . "`{$bd_users['group']}`) VALUES(:login, :ip, '$female', NOW(),'$group')";
 
 $result = getDB()->ask($sql, array(
     'login' => $input['login'],
-    'pass' => MCRAuth::createPass($input['pass']),
     'ip' => GetRealIp()
         ));
 
@@ -169,6 +168,16 @@ if (!$result)
 
 $tmp_user = new User(getDB()->lastInsertId());
 $tmp_user->setDefaultSkin();
+$tmp_user->changePassword($input['pass']);
+
+AuthCore::getLoader()->onUserCreate($tmp_user->id());
+
+if ($config['remote']) {
+    loadTool('auth.php', 'auth/remote/');
+
+    $remoteAuth = new RemoteAuth();
+    return $remoteAuth->сreate($input['pass'], $tmp_user);
+}
 
 $next_reg = (int) sqlConfigGet('next-reg-time');
 
@@ -183,4 +192,4 @@ if ($tmp_user->changeEmail($input['email'], $verification) > 1)
 if (!$verification)
     aExit(0, lng('REG_COMPLETE') . '. <a href="#" class="btn" onclick="Login();">' . lng('ENTER') . '</a>');
 else 
-    aExit(0, lng('REG_COMPLETE') . '. ' . lng('REG_CONFIRM_INFO'));
+    aExit(0, lng('REG_COMPLETE') . '. ' . lng('REG_CONFIRM_INFO'));        

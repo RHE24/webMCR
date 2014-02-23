@@ -386,16 +386,16 @@ class News_Item extends Item
         if (!empty($user) and $user->getPermission('add_news')) {
 
             ob_start();
-            include $this->GetView('news_admin.html');
+            include $this->viewer->getView('news_admin.html');
             $admin_buttons = ob_get_clean();
         }
 
         ob_start();
 
         if ($full_text)
-            include $this->GetView('news_full.html');
+            include $this->viewer->getView('news_full.html');
         else
-            include $this->GetView('news.html');
+            include $this->viewer->getView('news.html');
 
         return ob_get_clean();
     }
@@ -414,7 +414,7 @@ class News_Item extends Item
         $category_link = Rewrite::GetURL(array('category', $category_id), array('', 'cid'));
 
         ob_start();
-        include $this->GetView('news_full_header.html');
+        include $this->viewer->getView('news_full_header.html');
         $html = ob_get_clean();
 
         $html .= $this->Show(true);
@@ -424,7 +424,7 @@ class News_Item extends Item
 
         loadTool('comment.class.php');
 
-        $comments = new CommentList($this, $this->link_work, $this->st_subdir . 'comments/');
+        $comments = new CommentList($this, $this->link_work, $this->viewer->getSubDir() . 'comments/');
         $html .= $comments->Show($comment_list);
 
         if ($this->discus)
@@ -531,7 +531,7 @@ class NewsManager extends View
         $cat_list .= CategoryManager::GetList($this->category_id);
 
         ob_start();
-        include $this->GetView('categorys.html');
+        include $this->getView('categorys.html');
 
         return ob_get_clean();
     }
@@ -554,7 +554,7 @@ class NewsManager extends View
         $editMessage_Full = Filter::input('message_full', 'post', 'html', true);
         $error = '';
         
-        if ($editCategory !== false and $editTitle !== false and $editMessage !== false) {
+        if ($editCategory !== false) {
 
             ob_start();
             $state = 'error';
@@ -566,7 +566,7 @@ class NewsManager extends View
                 
                 if ($editMode > 0) {
 
-                    $news_item = new News_Item($editMode, $this->st_subdir);
+                    $news_item = new News_Item($editMode, $this->getSubDir());
 
                     if ($news_item->Edit(
                             $editCategory, 
@@ -599,7 +599,7 @@ class NewsManager extends View
                 }
             }
 
-            include $this->GetView('news_admin_mess.html');
+            include $this->getView('news_admin_mess.html');
             $error = ob_get_clean();
         } elseif (Filter::input('delete', 'get', 'int')) {
 
@@ -630,7 +630,7 @@ class NewsManager extends View
 
         $cat_list = CategoryManager::GetList($editCategory);
 
-        include $this->GetView('news_add.html');
+        include $this->getView('news_add.html');
 
         return ob_get_clean();
     }
@@ -657,7 +657,7 @@ class NewsManager extends View
         $category_link = Rewrite::GetURL(array('category', $category_id), array('', 'cid'));
 
         ob_start();
-        include $this->GetView('news_header.html');
+        include $this->getView('news_header.html');
         $html_news = ob_get_clean();
         $news_pnum = $config['news_by_page'];
 
@@ -674,14 +674,14 @@ class NewsManager extends View
 
         while ($line = $result->fetch('num')) {
 
-            $news_item = new News_Item($line[0], $this->st_subdir);
+            $news_item = new News_Item($line[0], $this->getSubDir());
 
             $html_news .= $news_item->Show();
             unset($news_item);
         }
 
         if ($newsnum)
-        $html_news .= $this->arrowsGenerator($this->work_link, $list, $newsnum, $news_pnum, 'news');
+        $html_news .= $this->showArrows($this->work_link, $list, $newsnum, $news_pnum, 'news');
 
         return $html_news;
     }

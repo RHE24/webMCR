@@ -1,0 +1,31 @@
+<div class="block-header">Список IP с ограничением доступа</div> 
+<div class="block-line"></div>
+
+<form action="index.php" method="get" class="form-inline">
+
+    <input type="hidden" name="mode" value="control" />
+    <input type="hidden" name="do" value="banip" />
+
+    <input type="text" name="ip" placeholder="IP">
+    <button type="submit" class="btn">Добавить</button>
+
+</form>
+
+<table class="table" id="mainTable">
+    <tr class="topRow">
+        <td>IP</td>
+        <td>Начало бана</td>
+        <td>Завершение бана</td>
+        <td>Тип</td>
+        <td>Действия</td>
+    </tr>
+    
+    <?php if(!$list) : ?>    
+    
+    <tr>
+       <td colspan="5">Не одной записи не найдено</td>
+    </tr>    
+    
+    <?php else : echo $list; endif; ?>
+    
+</table>

@@ -1,0 +1,13 @@
+<form class="form-inline" action="index.php" method="get" >
+
+<input type="hidden" name="mode" value="control" />
+<input type="hidden" name="do" value="group" />
+
+  <fieldset>
+    <legend>Редактировать группу:</legend>
+	<select name="sid"><?php echo $groupList ?></select> <button type="submit" class="btn">Перейти</button>
+  </fieldset>
+  
+</form>
+
+<?php echo $groupEditor ?>

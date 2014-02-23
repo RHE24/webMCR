@@ -1,10 +1,11 @@
 <?php
-define('MCR', '2.4b'); 
-define('PROGNAME', 'webMCR '.MCR);
-define('FEEDBACK', '<a href="http://drop.catface.ru/index.php?nid=17">'.PROGNAME.'</a> &copy; 2013-2014 NC22');  
+define('MCR', '2.42b'); 
+define('PROGNAME', 'webMCR ' . MCR);
+define('FEEDBACK', '<a href="http://drop.catface.ru/index.php?nid=17">' . PROGNAME . '</a> &copy; 2013-2014 NC22');  
 
-class Item extends View {
-
+class Item 
+{
+    protected $viewer;
     protected $type;
     protected $id;
 
@@ -12,7 +13,7 @@ class Item extends View {
 
     public function __construct($id, $type, $db, $style_sd = false)
     {
-        parent::View($style_sd);
+        $this->viewer = new View($style_sd);
 
         $this->id = (int) $id;
         $this->db = $db;
@@ -30,19 +31,22 @@ class Item extends View {
 
     public function id()
     {
-
         return $this->id;
     }
 
-    public function Exist()
+    public function getViewer() 
     {
-
+        return $this->viewer;
+    }
+    
+    public function exist()
+    {
         if ($this->id)
             return true;
         return false;
     }
 
-    public function Delete()
+    public function delete()
     {
         if (!$this->Exist())
             return false;
@@ -94,89 +98,50 @@ class ItemType {  // stock types
 
 /* Base class for objects with Show method */
 
-class View {
-    const def_theme = 'Default';
-
-    protected $st_subdir;
+class View
+{
+    const DEFAULT_THEME = 'Default';
+    
+    protected $baseDir = null;    
+    protected $subDir;
 
     public function View($style_subdir = '')
     {
-        if (!$style_subdir)
-            $style_subdir = false;
-
-        $this->st_subdir = $style_subdir;
+        $this->subDir = $style_subdir;
     }
-
-    public function ShowPage($way, $out = false)
+    
+    public function getSubDir() 
+    {
+        return $this->subDir;
+    }
+    
+    public function setViewBaseDir($dir) 
+    {
+        $this->baseDir = $dir;
+    }
+    
+    public function showPage($way, $out = false)
     {
         global $config;
 
         ob_start();
-
-        include self::Get($way, $this->st_subdir);
+        include self::Get($way, $this->subDir, $this->baseDir);
 
         return ob_get_clean();
     }
-
-    public static function ShowStaticPage($way, $st_subdir = false, $out = false)
+    
+    public function getView($way)
     {
-        global $config;
-        ob_start();
-        include self::Get($way, $st_subdir);
-        return ob_get_clean();
+        return self::Get($way, $this->subDir, $this->baseDir);
     }
-
-    protected function GetView($way)
+    
+    public function showArrows($link, $curpage, $itemsnum, $per_page, $prefix = false)
     {
-        return self::Get($way, $this->st_subdir);
-    }
-
-    public static function GetURL($way = false)
-    {
-        global $config;
-        $current_st_url = empty($config['s_theme']) ? DEF_STYLE_URL : STYLE_URL . $config['s_theme'] . '/';
-
-        if (!$way)
-            return $current_st_url;
-
-        if (DEF_STYLE_URL === $current_st_url)
-            return DEF_STYLE_URL . $way;
-        else
-            return (file_exists(MCR_STYLE . $config['s_theme'] . '/' . $way) ? $current_st_url : DEF_STYLE_URL) . $way;
-    }
-
-    public static function URL($way = false)
-    {
-        echo self::GetURL($way);
-    }
-
-    public static function Get($way, $base_ = false)
-    {
-        global $config;
-
-        $base = ($base_) ? $base_ : '';
-
-        if (empty($config['s_theme']))
-            $theme_dir = '';
-        else {
-
-            if ($config['s_theme'] === self::def_theme)
-                return MCR_STYLE . self::def_theme . '/' . $base . $way;
-
-            $theme_dir = $config['s_theme'] . '/';
-        }
-
-        return MCR_STYLE . ((file_exists(MCR_STYLE . $theme_dir . $base . $way)) ? $theme_dir : self::def_theme . '/') . $base . $way;
-    }
-
-    public function arrowsGenerator($link, $curpage, $itemsnum, $per_page, $prefix = false)
-    {
-
         if (!$prefix) { // Default arrows style
             $prefix = 'common';
-            $st_subdir = 'other/';
+            $subDir = 'other/';
         } else
-            $st_subdir = $this->st_subdir;
+            $subDir = $this->subDir;
 
         $numoflists = ceil($itemsnum / $per_page);
         $arrows = '';
@@ -210,12 +175,12 @@ class View {
                 if ($curpage - 4 > 1) {
                     $var = 1;
                     $text = '<<';
-                    include $this->Get($prefix . '_list_item.html', $st_subdir);
+                    include $this->Get($prefix . '_list_item.html', $subDir);
                 }
 
                 $var = $curpage - 1;
                 $text = '<';
-                include $this->Get($prefix . '_list_item.html', $st_subdir);
+                include $this->Get($prefix . '_list_item.html', $subDir);
             }
 
             for ($i = $showliststart; $i <= $showlistend; $i++) {
@@ -224,39 +189,81 @@ class View {
                 $text = $i;
 
                 if ($i == $curpage)
-                    include $this->Get($prefix . '_list_item_selected.html', $st_subdir);
+                    include $this->Get($prefix . '_list_item_selected.html', $subDir);
                 else
-                    include $this->Get($prefix . '_list_item.html', $st_subdir);
+                    include $this->Get($prefix . '_list_item.html', $subDir);
             }
 
             if ($curpage < $numoflists) {
 
                 $var = $curpage + 1;
                 $text = '>';
-                include $this->Get($prefix . '_list_item.html', $st_subdir);
+                include $this->Get($prefix . '_list_item.html', $subDir);
 
                 if ($curpage + 5 < $numoflists) {
                     $var = $numoflists;
                     $text = '>>';
-                    include $this->Get($prefix . '_list_item.html', $st_subdir);
+                    include $this->Get($prefix . '_list_item.html', $subDir);
                 }
             }
         }
 
         $arrows = ob_get_clean();
-
         if ($arrows) {
 
             ob_start();
 
-            include $this->Get($prefix . '_list.html', $st_subdir);
+            include $this->Get($prefix . '_list.html', $subDir);
 
             return ob_get_clean();
         }
 
         return '';
     }
+    
+    public static function ShowStaticPage($way, $subDir = false, $out = false)
+    {
+        global $config;
+        
+        ob_start();
+        include self::Get($way, $subDir);
+        return ob_get_clean();
+    }
 
+    public static function GetURL($way = false)
+    {
+        global $config;
+        $current_st_url = empty($config['s_theme']) ? DEF_STYLE_URL : STYLE_URL . $config['s_theme'] . '/';
+
+        if (!$way)
+            return $current_st_url;
+
+        if (DEF_STYLE_URL === $current_st_url)
+            return DEF_STYLE_URL . $way;
+        else
+            return (file_exists(MCR_STYLE . $config['s_theme'] . '/' . $way) ? $current_st_url : DEF_STYLE_URL) . $way;
+    }
+
+    public static function URL($way = false)
+    {
+        echo self::GetURL($way);
+    }
+
+    public static function Get($way, $subDir = '', $base = '')
+    {
+        global $config;
+
+        $default = $base . $subDir . self::DEFAULT_THEME . '/'  . $way;
+        $way = $base . $subDir . $config['s_theme'] . '/' . $way; 
+        
+        if (!$base) { 
+            $way = MCR_STYLE . $way;    
+            $default = MCR_STYLE . $default;
+        }
+        
+        if ($config['s_theme'] == self::DEFAULT_THEME) return $default;
+        return file_exists($way) ? $way : $default;
+    }
 }
 
 class TextBase
@@ -303,8 +310,9 @@ class TextBase
 
 }
 
-class EMail {
-const ENCODE = 'utf-8';
+class EMail 
+{
+    const ENCODE = 'utf-8';
 	
     public static function Send($mail_to, $subject, $message)
     {
@@ -393,7 +401,6 @@ const ENCODE = 'utf-8';
         if ($correct_response)
             return false; return true;
     }
-
 }
 
 class Message
@@ -446,7 +453,6 @@ class Message
 
         return $text;
     }
-
 }
 
 class ItemLike
@@ -529,17 +535,16 @@ class Menu extends View
     private $menu_items;
     private $menu_fname;
 
-    public function Menu($style_sd = false, $auto_load = true, $mfile = 'instruments/menu_items.php')
+    public function Menu($style_sd = false, $auto_load = true, $mfile = false)
     {
-        global $config;
-
         parent::View($style_sd);
 
+        if (!$mfile) $mfile = getWay('system') . 'menuItems.php';
         $this->menu_fname = $mfile;
 
         if ($auto_load) {
 
-            require(MCR_ROOT . $this->menu_fname);
+            require($this->menu_fname);
 
             $this->menu_items = $menu_items;
         } else
@@ -562,7 +567,7 @@ class Menu extends View
         $txt = "<?php if (!defined('MCR')) exit;" . PHP_EOL;
         $txt .= '$menu_items = ' . var_export($this->menu_items, true) . ';' . PHP_EOL;
 
-        $result = file_put_contents(MCR_ROOT . $this->menu_fname, $txt);
+        $result = file_put_contents($this->menu_fname, $txt);
 
         return (is_bool($result) and $result == false) ? false : true;
     }
@@ -840,6 +845,18 @@ class Filter
             'sanitize' => null,
             'validate' => null,            
         ),
+        'ip' => array(
+            'default' => '',
+            'sanitize' => FILTER_SANITIZE_STRING,
+            'sanitizeFlag' => FILTER_FLAG_STRIP_LOW,
+            'validate' => FILTER_VALIDATE_IP, 
+        ),
+        'stringLow' => array(
+            'default' => '',
+            'sanitize' => FILTER_SANITIZE_STRING,
+            'sanitizeFlag' => FILTER_FLAG_STRIP_LOW,
+            'validate' => null,        
+        ),
         'string' => array(
             'default' => '',
             'sanitize' => FILTER_SANITIZE_STRING,
@@ -914,20 +931,11 @@ class Filter
             $html = preg_replace('#</*(' . implode('|', $fTags) . ')[^>]*>#i', "", $html);
         } while ($compare != $html);
     }
-    
-    public static function sanitize($key, $method, $type) 
-    { 
-        // get var if setted and sanitize it
         
-        $filter = self::$rules[$type]['sanitize'];
-        
-        if ($filter) {
-            $var = filter_input($method, $key, $filter);
-        } else {
-            $var = filter_input($method, $key);
-        }
-
-        return $var;
+    public static function str($var, $type = 'string', $falseOnFail = false) 
+    {
+        $var = self::sanitizeStr($var, $type);      
+        return self::validateStr($var, $type, $falseOnFail);
     }
     
     /**
@@ -944,17 +952,53 @@ class Filter
     
     public static function input($key, $method = 'post', $type = 'string', $falseOnFail = false)
     {
-        $var = self::sanitize($key, self::$methods[$method], $type, true);
+        $var = self::sanitizeInput($key, self::$methods[$method], $type, true);
+        return self::validateStr($var, $type, $falseOnFail);
+    }    
+
+    private static function sanitizeInput($key, $method, $type) 
+    { 
+        // get var if setted and sanitize it
         
-         // input is not set or filter fail or variable is empty - exit with default or optional value
+        $filter = self::$rules[$type]['sanitize'];
+        
+        if ($filter) {
+        
+            if (isset(self::$rules[$type]['sanitizeFlag'])) {
+                return filter_input($method, $key, $filter, self::$rules[$type]['sanitizeFlag']);
+            } else return filter_input($method, $key, $filter);
+            
+        } else {
+            return filter_input($method, $key);
+        }
+    }
+    
+    private static function sanitizeStr($var, $type) 
+    {
+        $filter = self::$rules[$type]['sanitize'];
+        
+        if ($filter) {            
+            
+            if (isset(self::$rules[$type]['sanitizeFlag'])) {
+                return filter_var($var, $filter, self::$rules[$type]['sanitizeFlag']);
+            } else return filter_var($var, $filter);
+            
+        } else {
+            return filter_var($var);
+        }
+    }
+    
+    private static function validateStr($var, $type, $falseOnFail)
+    {       
+        // input is not set or filter fail or variable is empty - exit with default or optional value
 
         if ($var === null or $var === false or !strlen($var)) { 
             return ($falseOnFail) ? false : self::$rules[$type]['default'];
         }
         
         $filter = self::$rules[$type]['validate'];
-        if ($filter) {
-            $var = filter_var($var, $filter);
+        if ($filter) {        
+            $var = filter_var($var, $filter);      
             
             if ($var === false) { // validation fail
                 return ($falseOnFail) ? false : self::$rules[$type]['default'];
@@ -973,8 +1017,8 @@ class Filter
             default:
                 $var = trim($var);
                 break;
-        }
-
+        } 
+        
         return $var;
     }
 }

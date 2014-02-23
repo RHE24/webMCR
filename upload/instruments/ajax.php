@@ -8,6 +8,12 @@ header("Content-type: text/html; charset=UTF-8");
 
 $ajax_message = array('code' => 0, 'message' => '');
 
+function isAjaxInput() {
+    if (($_SERVER['REQUEST_METHOD'] == 'POST' ) and (stripos($_SERVER["CONTENT_TYPE"], "application/json") === 0)) 
+        return true;
+    else return false;
+}
+
 function escapeJsonString($value) { // экранирование строки JSON
 
     // list from json.org: (\b backspace, \f formfeed)    
@@ -22,7 +28,7 @@ function CaptchaCheck($exit_mess = 2, $ajaxExit = true, $post_name = 'antibot')
 {
     if (!isset($_SESSION))
         session_start();
-    
+        
     $input = Filter::input($post_name, 'post', 'int', true);
     
     if (empty($_SESSION['code']) or
@@ -58,7 +64,13 @@ function aExit($code, $mess = 'error')
     if ($iframe) {
 
         $result = escapeJsonString($result);
-        $result = '<html><head><title>jnone</title><script type="text/javascript"> var json_response = "' . $result . '"</script></head><body></body></html>';
+        $result = '<html>'
+                . '<head>'
+                . '<title>jnone</title>'
+                . '<script type="text/javascript"> var json_response = "' . $result . '"</script>'
+                . '</head>'
+                . '<body></body>'
+                . '</html>';
     }
 
     exit($result);

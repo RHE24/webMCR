@@ -1,0 +1,64 @@
+<form action="index.php?mode=control&do=ipbans" method="post" enctype="multipart/form-data">	
+
+    <div class="tabbable" style="margin-top: 12px; padding: 10px;">
+
+    <ul class="nav nav-tabs">
+	
+		<li class="active"><a href="#tab1" data-toggle="tab">Правила регистрации</a></li>
+		<li><a href="#tab2" data-toggle="tab">Образ</a></li>	
+    </ul>
+    
+    <div class="tab-content">
+
+        <div class="tab-pane active" id="tab1">
+
+            <label>Таймаут: ( часы ) </label>
+            <span class="help-block">Время после которого посетитель сайта сможет повторно зарегистрироваться на сайте. 0 - без ограничений</span>
+            <input type="text" name="timeout" value="<?php echo $timeout ?>">	
+            <label class="checkbox">
+                <input type="checkbox" name="emailver" value="1" <?php echo ($verification)?'checked="checked"':'' ?>> Подтверждение почтового ящика
+            </label>		
+
+        </div>
+        
+        <div class="tab-pane" id="tab2">
+
+            <div class="skin-block" >
+              <div id="profile-skin-front" style="background:url(skin.php?female=0); display:inline-block; height: 224px; width: 112px;"></div>
+            </div>   
+
+            <div class="skin-block" >
+              <div id="profile-skin-back" style="background:url(skin.php?female=0); background-position: 112px 0px; display:inline-block; height: 224px; width: 112px;"></div>
+            </div>
+            
+            <div class="control-group" style="padding-top: 12px;">
+              <label class="control-label" for="profile-cloak-file"><?php echo lng('MALE') ?> - Скин поумолчанию</label>
+              <div class="controls">
+                 <input id="profile-cloak-file" type="file" name="def_skin_male" size="20" />
+              </div>
+            </div> 
+
+            <div class="skin-block" >
+              <div id="profile-skin-front" style="background:url(skin.php?female=1); display:inline-block; height: 224px; width: 112px;"></div>
+            </div>   
+
+            <div class="skin-block" >
+              <div id="profile-skin-back" style="background:url(skin.php?female=1); background-position: 112px 0px; display:inline-block; height: 224px; width: 112px;"></div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label" for="profile-cloak-file"><?php echo lng('FEMALE') ?> - Скин поумолчанию</label>
+              <div class="controls">
+                 <input id="profile-cloak-file" type="file" name="def_skin_female" size="20" />
+              </div>
+            </div> 			
+
+        </div>        
+        
+    </div>
+    
+        <button type="submit" class="btn">Применить</button>
+        
+    </div>
+    
+</form>

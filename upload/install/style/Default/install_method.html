@@ -1,0 +1,19 @@
+<form class="form-inline" action="<?php echo BASE_URL ?>install/install.php" method="post">        
+    
+    <input type="hidden" name="step" value="0" />	
+        
+    <fieldset>
+        <legend>Режим установки</legend>
+
+        <select name="mode">
+            <option value="usual" selected >Обычная установка</option>
+            <option value="xenforo" >Дополнение к xenForo</option>
+            <option value="ipb" >Дополнение к Invision Power Board</option>
+            <option value="wp" >Дополнение к WordPress</option>
+            <option value="dle" >Дополнение к DataLife Engine</option>	
+            <option value="joomla" >Дополнение к Joomla</option>						
+        </select>
+        
+        <button type="submit" name="submit" class="btn">Начать установку</button>
+    </fieldset>  
+</form>

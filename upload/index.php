@@ -4,22 +4,19 @@
 
 header('Content-Type: text/html; charset=UTF-8');
 
-require_once('./system.php');
+require ('./system.php');
+execute();
+
 DBinit('index');
 
 loadTool('user.class.php');
-MCRAuth::userLoad();
-
-function GetRandomAdvice()
-{
-    return ($quotes = @file(View::Get('sovet.txt'))) ? $quotes[rand(0, sizeof($quotes) - 1)] : "Советов нет";
-}
+$user = AuthCore::getLoader()->userLoad();
 
 function LoadTinyMCE()
 {
-    global $addition_events, $content_js;
+    global $addition_events, $content_js, $site_ways;
 
-    if (!file_exists(MCR_ROOT . 'instruments/tiny_mce/tinymce.min.js'))
+    if (!file_exists(getWay('system') . 'tiny_mce/tinymce.min.js'))
         return false;
 
     $tmce = 'tinymce.init({';
@@ -30,45 +27,54 @@ function LoadTinyMCE()
     $tmce .= '});';
 
     $addition_events .= $tmce;
-    $content_js .= '<script type="text/javascript" src="instruments/tiny_mce/tinymce.min.js"></script>';
+    $content_js .= '<script type="text/javascript" src="' . $site_ways['system'] . 'tiny_mce/tinymce.min.js"></script>';
 
     return true;
 }
 
 function InitJS()
 {
-    global $addition_events;
+    global $addition_events, $site_ways;
 
-    $init_js = "var pbm; var way_style = '" . DEF_STYLE_URL . "'; var cur_style = '" . View::GetURL() . "'; var base_url  = '" . BASE_URL . "';";
-    $init_js .= "window.onload = function () { mcr_init(); " . $addition_events . " } ";
-    return '<script type="text/javascript">' . $init_js . '</script>';
+    $initJs = '<script type="text/javascript">'
+             . 'var pbm; '
+             . 'var way_style = "' . DEF_STYLE_URL . '"; '
+             . 'var cur_style = "' . View::GetURL() . '";'
+             . 'var base_url  = "' . BASE_URL . '";'
+             . 'window.onload = function () { mcr_init(); ' . $addition_events . ' } '
+             . '</script>';    
+
+    $sd = getWay('system') . 'style/';
+    
+    $initJs .= ' <script src="'. View::Get('ajax.js', 'js/', $sd) . '"></script>';
+    $initJs .= ' <script src="'. View::Get('monitoring.js', 'js/', $sd) . '"></script>';
+    $initJs .= ' <script src="'. View::Get('tools.js', 'js/', $sd) . '"></script>';
+
+    return $initJs;
 }
 
 $menu = new Menu();
-
-if ($config['offline'] and (empty($user) or $user->group() != 3))
-    exit(View::ShowStaticPage('site_closed.html'));
 
 $content_main = '';
 $content_side = '';
 $addition_events = '';
 $content_js = '';
-$content_advice = GetRandomAdvice();
+$content_advice = '';
 
-if (!empty($user)) {
+if ($config['offline'] and (!$user or $user->group() != 3))
+    exit(View::ShowStaticPage('site_closed.html'));
 
-    $player = $user->name();
-    $player_id = $user->id();
-    $player_lvl = $user->lvl();
-    $player_email = $user->email();
-    if (empty($player_email))
-        $player_email = lng('NOT_SET');
-    $player_group = $user->getGroupName();
-    $player_money = $user->getMoney();
+if ($user) {
+    
+    $user->activity();
+    
+    if ($user->group() == 4) {    
+        $player_email = $user->email();        
+        if (!$player_email) $player_email = lng('NOT_SET');
 
-    if ($user->group() == 4)
-        $content_main .= View::ShowStaticPage('profile_verification.html', 'profile/', $player_email);
-}
+        $content_main .= View::ShowStaticPage('profile_verification.html', 'profile/', $player_email);   
+    }
+} 
 
 if (Filter::input('id', 'get', 'int')){
     $mode = 'news_full';
@@ -95,11 +101,11 @@ switch ($mode) {
         break;
     default:
         if (!preg_match("/^[a-zA-Z0-9_-]+$/", $mode) or
-            !file_exists(MCR_ROOT . '/location/' . $mode . '.php')) {
+            !file_exists(MCR_ROOT . 'location/' . $mode . '.php')) {
             $mode = $config['s_dpage'];
         }
 
-        include(MCR_ROOT . '/location/' . $mode . '.php');
+        include(MCR_ROOT . 'location/' . $mode . '.php');
         break;
 }
 
