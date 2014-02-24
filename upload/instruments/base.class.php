@@ -811,6 +811,7 @@ class Rewrite
     }
 }
 
+
 class Filter 
 {
     private static $methods = array(
@@ -840,26 +841,36 @@ class Filter
             'sanitize' => FILTER_SANITIZE_STRING,
             'validate' => FILTER_VALIDATE_EMAIL,            
         ),
+        
         'html' => array(
             'default' => '',
             'sanitize' => null,
             'validate' => null,            
         ),
+        
         'ip' => array(
             'default' => '',
             'sanitize' => FILTER_SANITIZE_STRING,
             'sanitizeFlag' => FILTER_FLAG_STRIP_LOW,
             'validate' => FILTER_VALIDATE_IP, 
         ),
+        
         'stringLow' => array(
             'default' => '',
             'sanitize' => FILTER_SANITIZE_STRING,
             'sanitizeFlag' => FILTER_FLAG_STRIP_LOW,
             'validate' => null,        
         ),
+        
+        /**
+         * Used for plain UTF-8 text, if you want get html tags, use 'html' instead
+         * @todo strip low except new line and c carrage return
+         */ 
+        
         'string' => array(
             'default' => '',
             'sanitize' => FILTER_SANITIZE_STRING,
+            'sanitizeFlag' => FILTER_FLAG_NO_ENCODE_QUOTES,
             'validate' => null, 
         ),
     );
@@ -880,11 +891,13 @@ class Filter
          * UTF-8 chartable can be found here http://www.utf8-chartable.de/unicode-utf8-table.pl?utf8=dec
          * @var $u range of control symbols + space and '/'
          */
+         
         $u = '[\x00-\x20\/]*';
 
         /**
          * @var $fTags list of forbitten tags
          */
+         
         $fTags = array(
             'applet',
             'meta',
@@ -1014,6 +1027,8 @@ class Filter
             case 'html' :
                 self::html($var);
                 break;
+            case 'string':
+                preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/', '', $var); // remove all control symbols except new line and c return
             default:
                 $var = trim($var);
                 break;

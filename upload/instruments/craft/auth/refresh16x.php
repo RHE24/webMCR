@@ -38,12 +38,12 @@ $sql = "SELECT `{$bd_users['id']}` FROM `{$bd_names['users']}` "
      . "WHERE `{$bd_users['session']}`=:session "
      . "AND `{$bd_users['clientToken']}`=:token ";
      
-$result = getDB()->fetchRow($sql, array(
+$line = getDB()->fetchRow($sql, array(
     'token' => $clientToken, 
     'session' => $sessionid
  ), 'num');
 
-if (!$result) logExit("[refresh16x.php] refresh process, wrong accessToken/clientToken pair [$sessionid] [$clientToken]");
+if (!$line) logExit("[refresh16x.php] refresh process, wrong accessToken/clientToken pair [$sessionid] [$clientToken]");
 
 $auth_user = new User($line[0]);
 
@@ -60,4 +60,3 @@ $responce = array(
     'selectedProfile' => $profile);
 
 exit(json_encode($responce));
-?>
