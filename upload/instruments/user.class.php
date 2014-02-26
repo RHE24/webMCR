@@ -793,7 +793,7 @@ class User
         $new_way = ($type == 'skin') ? $this->getSkinFName() : $this->getCloakFName();
 
         if (rename($way, $new_way))
-            chmod($new_way, 0777);
+            chmod($new_way, 0644);
         else {
 
             unlink($way);
