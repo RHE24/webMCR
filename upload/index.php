@@ -44,11 +44,11 @@ function InitJS()
              . 'window.onload = function () { mcr_init(); ' . $addition_events . ' } '
              . '</script>';    
 
-    $sd = getWay('system') . 'style/';
-    
-    $initJs .= ' <script src="'. View::Get('ajax.js', 'js/', $sd) . '"></script>';
-    $initJs .= ' <script src="'. View::Get('monitoring.js', 'js/', $sd) . '"></script>';
-    $initJs .= ' <script src="'. View::Get('tools.js', 'js/', $sd) . '"></script>';
+    $sd = $site_ways['system'] . 'js/';
+
+    $initJs .= ' <script src="'. $sd . 'ajax.js"></script>';
+    $initJs .= ' <script src="'. $sd . 'monitoring.js"></script>';
+    $initJs .= ' <script src="'. $sd . 'tools.js"></script>';
 
     return $initJs;
 }

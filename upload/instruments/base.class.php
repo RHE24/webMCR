@@ -115,7 +115,7 @@ class View
         return $this->subDir;
     }
     
-    public function setViewBaseDir($dir) 
+    public function setViewBaseDir($dir) // styles base dir
     {
         $this->baseDir = $dir;
     }
@@ -253,8 +253,8 @@ class View
     {
         global $config;
 
-        $default = $base . $subDir . self::DEFAULT_THEME . '/'  . $way;
-        $way = $base . $subDir . $config['s_theme'] . '/' . $way; 
+        $default = $base . self::DEFAULT_THEME . '/' . $subDir  . $way;
+        $way = $base . $config['s_theme'] . '/' . $subDir . $way; 
         
         if (!$base) { 
             $way = MCR_STYLE . $way;    

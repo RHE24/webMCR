@@ -11,10 +11,12 @@ function CheckPostComplect()
         'repass' => Filter::input('repass'),
         'email' => Filter::input('email', 'post', 'mail'),
         'female' => Filter::input('female', 'post', 'bool'),
-        'verificate' => Filter::input('verificate'),
+        'verificate' => Filter::input('verificate', 'get'),
         'id' => Filter::input('id', 'post', 'int'),
         'method' => false
     );
+    
+    if (!$input['id']) $input['id'] = Filter::input('id', 'get', 'int');
 
     if ($input['login'] and
         $input['pass'] and

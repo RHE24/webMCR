@@ -57,7 +57,8 @@ define('CUR_STYLE_URL', DEF_STYLE_URL);
 $page = 'Настройка ' . PROGNAME;
 
 $content_advice = '';
-$content_servers = ''; $content_js = '<script src="'. $site_ways['system'] . 'style/js/tools.js"></script>';
+$content_servers = ''; 
+$content_js = '<script src="'. $site_ways['system'] . 'js/tools.js"></script>';
 $content_side = $viewer->showPage('install_side.html');
 $addition_events = '';
 

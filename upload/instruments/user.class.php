@@ -476,7 +476,8 @@ class User
     
     public function setDefSkinTrg($state) 
     {
-        global $bd_users;        
+        global $bd_users, $config;
+        if (!$config['default_skin']) return true;    
         if (!$this->exist()) return false;
         
         $state = ($state) ? 1 : 0;        
@@ -486,9 +487,10 @@ class User
  
     public function getDefSkinTrg()
     { 
-        global $bd_users;
+        global $bd_users, $config;
         if (!$this->exist()) return false;
-
+        if (!$config['default_skin']) return !file_exists($this->getSkinFName()); 
+        
         $line = getDB()->fetchRow("SELECT `default_skin` FROM `{$this->db}` "
                 . "WHERE `{$bd_users['id']}`='{$this->id()}'", false, 'num');
 
@@ -520,11 +522,18 @@ class User
 
     public function setDefaultSkin()
     {
-        if (!$this->id)
+        global $config;
+        
+        if (!$this->id) {
             return 0;
-
+        }
+        
         $this->deleteSkin();
-
+        
+        if (!$config['default_skin']) {            
+            return 1;
+        }
+        
         $default_skin = getWay('tmp') . 'defaultSkins/char' . (($this->isFemale()) ? 'Female' : '') . '.png';
 
         if (!copy($default_skin, $this->getSkinFName()))

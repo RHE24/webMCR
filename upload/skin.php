@@ -16,9 +16,17 @@ if ($showByName or $userId or $isFemale !== false) {
         DBinit('skin_viewer');
         loadTool('user.class.php');
         $tmp_user = new User($userId);
-        if (!$tmp_user->id()) exit;
-        if (!file_exists($tmp_user->getSkinFName())) $tmp_user->setDefaultSkin(); 
+        if (!$tmp_user->id()) exit;        
         $showByName = $tmp_user->name();
+        
+        if (!file_exists($tmp_user->getSkinFName())) {
+        
+            if ($config['default_skin']) $tmp_user->setDefaultSkin();
+            else {
+                $showByName = false;
+                $isFemale = 1;
+            }
+        }
     } 
     
     ShowSkin($showMini, $showByName, $isFemale, $config['sbuffer']);

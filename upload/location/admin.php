@@ -15,11 +15,11 @@ $menu->SetItemActive('admin');
 
 /* Default vars */
 
-$baseDir = getWay('system') . 'style/admin/';
+$styleDir = getWay('system') . 'style/'; $sd = 'admin/';
 $viewer = new View();
-$viewer->setViewBaseDir($baseDir);
+$viewer->setViewBaseDir($styleDir);
 
-$content_side .= $viewer->showPage('side.html');
+$content_side .= $viewer->showPage($sd . 'side.html');
   
 $defaultDo = 'search';
 
@@ -114,8 +114,8 @@ if ($do) {
            $get .= '&amp;' . $key .'='. $value;           
         }
         
-        $controlManager = new ControlManager(false, 'index.php?mode=control&amp;do=search' . $get . '&amp;');
-        $controlManager->setViewBaseDir($baseDir);
+        $controlManager = new ControlManager($sd, 'index.php?mode=control&amp;do=search' . $get . '&amp;');
+        $controlManager->setViewBaseDir($styleDir);
         $html .= $controlManager->ShowUserListing($curlist, $input);
  
     break;
@@ -174,21 +174,21 @@ if ($do) {
         $timeout = (int) sqlConfigGet('next-reg-time');
         $verification = ((int) sqlConfigGet('email-verification')) ? true : false;
 
-        ob_start(); include $viewer->getView('register.html');
+        ob_start(); include $viewer->getView($sd . 'register.html');
         $html .= ob_get_clean();        
         
         break;
     case 'ipbans':
 
-        $controlManager = new ControlManager(false, 'index.php?mode=control&do=ipbans&');
-        $controlManager->setViewBaseDir($baseDir);
+        $controlManager = new ControlManager($sd, 'index.php?mode=control&do=ipbans&');
+        $controlManager->setViewBaseDir($styleDir);
         $html .= $controlManager->ShowIpBans($curlist);
         
     break;
     case 'servers':
 
-        $controlManager = new ControlManager(false, 'index.php?mode=control&do=servers&');
-        $controlManager->setViewBaseDir($baseDir);
+        $controlManager = new ControlManager($sd, 'index.php?mode=control&do=servers&');
+        $controlManager->setViewBaseDir($styleDir);
         $html .= $controlManager->ShowServers($curlist);
         
     break;
@@ -220,12 +220,12 @@ switch ($do) {
         if ($user_id)
             $url .= '&amp;user_id=' . $user_id;
 
-        $files_manager = new FileManager('other/', $url . '&amp;');
+        $files_manager = new FileManager($sd . 'other/', $url . '&amp;');
         
         $fileAddForm = $files_manager->ShowAddForm();
         $files = $files_manager->ShowFilesByUser($curlist, $user_id);
         
-        include $viewer->getView('filelist.html');          
+        include $viewer->getView($sd . 'filelist.html');          
         break;
         
     case 'user_ban':
@@ -243,7 +243,7 @@ switch ($do) {
             $info .= lng('USER_BANNED');
         }
         
-        include $viewer->getView('user/user_ban.html');
+        include $viewer->getView($sd . 'user/user_ban.html');
         break;
     case 'user_delete':
         
@@ -259,7 +259,7 @@ switch ($do) {
         } 
         
         if ($ban_user)
-            include $viewer->getView('user/user_del.html');
+            include $viewer->getView($sd . 'user/user_del.html');
 
         break;
 
@@ -270,22 +270,22 @@ switch ($do) {
 
         $group_list = GroupManager::GetList($ban_user->group());
 
-        include $viewer->getView('profile/profile_main.html');
+        include $viewer->getView($sd . 'profile/profile_main.html');
 
         $skin_def = $ban_user->getDefSkinTrg();
         $cloak_exist = file_exists($ban_user->getCloakFName());
         $user_img_get = $ban_user->getSkinLink() . '&amp;refresh=' . rand(1000, 9999);
 
         if ($cloak_exist or !$skin_def)
-            include$viewer->getView('profile/profile_skin.html');
+            include$viewer->getView($sd . 'profile/profile_skin.html');
         if (!$skin_def)
-            include $viewer->getView('profile/profile_del_skin.html');
+            include $viewer->getView($sd . 'profile/profile_del_skin.html');
         if ($cloak_exist)
-            include $viewer->getView('profile/profile_del_cloak.html');
+            include $viewer->getView($sd . 'profile/profile_del_cloak.html');
         if ($bd_names['iconomy'])
-            include $viewer->getView('profile/profile_money.html');
+            include $viewer->getView($sd . 'profile/profile_money.html');
 
-        include $viewer->getView('profile/profile_footer.html');          
+        include $viewer->getView($sd . 'profile/profile_footer.html');          
      break;
     case 'update':
 
@@ -327,7 +327,7 @@ switch ($do) {
         $cat_list = '<option value="-1">' . lng('NEWS_LAST') . '</option>';
         $cat_list .= CategoryManager::GetList($config['game_news']);
 
-        include $viewer->getView('game.html');
+        include $viewer->getView($sd . 'game.html');
         break;
     case 'category':
         
@@ -360,7 +360,7 @@ switch ($do) {
         }
 
         $cat_list = CategoryManager::GetList($id);
-        include $viewer->getView('category/category_header.html');
+        include $viewer->getView($sd . 'category/category_header.html');
 
         if ($id) {
             $cat_item = new Category($id);
@@ -371,13 +371,13 @@ switch ($do) {
                 $cat_desc = $cat_item->GetDescription();
                 $cat_priority = $cat_item->GetPriority();
 
-                $viewer->getView('category/category_edit.html');
+                $viewer->getView($sd . 'category/category_edit.html');
                 if (!$cat_item->IsSystem())
-                    include $viewer->getView('category/category_delete.html');
+                    include $viewer->getView($sd . 'category/category_delete.html');
             }
             unset($cat_item);
         } else
-            include $viewer->getView('category/category_add.html');
+            include $viewer->getView($sd . 'category/category_add.html');
         break;
     case 'group':
 
@@ -418,20 +418,20 @@ switch ($do) {
             $ratioList = RatioList($group['max_ratio']);
             $groupName = $groupItem->GetName();
 
-            include $viewer->getView('group/group_edit.html');
-            if (!$groupItem->IsSystem()) include $viewer->getView('group/group_delete.html');
+            include $viewer->getView($sd . 'group/group_edit.html');
+            if (!$groupItem->IsSystem()) include $viewer->getView($sd . 'group/group_delete.html');
             
             unset($groupItem);
             
         } else {
 
             $ratioList = RatioList();
-            include $viewer->getView('group/group_add.html');
+            include $viewer->getView($sd . 'group/group_add.html');
         }
         
         $groupEditor = ob_get_clean();
         
-        include $viewer->getView('group/group.html');
+        include $viewer->getView($sd . 'group/group.html');
         
         break;
     case 'server_edit':
@@ -536,8 +536,8 @@ switch ($do) {
         /* Output */
 
         if ($id) {
-            $server = new Server($id, 'server/');
-            $server->getViewer()->setViewBaseDir(getWay('system'));
+            $server = new Server($id, $sd . 'server/');
+            $server->getViewer()->setViewBaseDir($styleDir);
             
             $server->UpdateState(true);
             $server_info = $server->ShowHolder('mon', 'adm');
@@ -563,9 +563,9 @@ switch ($do) {
             $serv_game = $server->GetVisible('game');
             $serv_mon = $server->GetVisible('mon');
 
-            include $viewer->getView('server/server_edit.html');
+            include $viewer->getView($sd . 'server/server_edit.html');
         } else
-            include $viewer->getView('server/server_add.html');
+            include $viewer->getView($sd . 'server/server_add.html');
 
         break;
     case 'constants':
@@ -653,12 +653,12 @@ switch ($do) {
                 $info .= '<br>' . lng('OPTIONS_MAIL_TEST_FAIL');
         }
 
-        $themeManager = new ThemeManager('theme/', 'index.php?mode=control&');
-        $themeManager->setViewBaseDir($baseDir);
+        $themeManager = new ThemeManager($sd . 'theme/', 'index.php?mode=control&');
+        $themeManager->setViewBaseDir($styleDir);
         
         $themeSelector = $themeManager->ShowThemeSelector();
 
-        include $viewer->getView('constants.html');
+        include $viewer->getView($sd . 'constants.html');
         break; 
     
     case 'banip':
@@ -684,7 +684,7 @@ switch ($do) {
             $info .= lng('IP_BANNED');
         }
         
-        include $viewer->getView('ban/ban_ip.html');        
+        include $viewer->getView($sd . 'ban/ban_ip.html');        
         break;
         
     case 'banip_delete':
@@ -705,7 +705,7 @@ $html .= ob_get_clean();
 
 ob_start();
 
-if ($info) include $viewer->getView('info.html');
+if ($info) include $viewer->getView($sd . 'info.html');
 
-include $viewer->getView('admin.html');
+include $viewer->getView($sd . 'admin.html');
 $content_main .= ob_get_clean();
