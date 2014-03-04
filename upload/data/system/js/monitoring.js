@@ -51,7 +51,7 @@ function LoadServersProc() {
         }
     }
 
-    SendByXmlHttp('instruments/MineCraft/state.php', 'id=' + encodeURIComponent(server_id), event)
+    SendByXmlHttp('instruments/craft/state.php', 'id=' + encodeURIComponent(server_id), event)
 }
 
 function LoadServers() {

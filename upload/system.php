@@ -1,5 +1,7 @@
 <?php
-
+define('MCR', '2.42b'); 
+define('PROGNAME', 'webMCR ' . MCR);
+    
 function execute() 
 {  
     global $config, 
@@ -38,11 +40,12 @@ function execute()
 
     loadTool('base.class.php');
     loadTool('auth.class.php', 'auth/');    
-    
+
     define('MCR_LANG', 'ru');
     define('MCR_STYLE', getWay('style'));
     define('STYLE_URL', $site_ways['style']); // deprecated
     define('DEF_STYLE_URL', STYLE_URL . View::DEFAULT_THEME . '/');
+    define('FEEDBACK', '<a href="http://drop.catface.ru/index.php?nid=17">' . PROGNAME . '</a> &copy; 2013-2014 NC22');  
     define('BASE_URL', $config['s_root']);   
     
     date_default_timezone_set($config['timezone']);

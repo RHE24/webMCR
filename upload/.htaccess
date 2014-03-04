@@ -22,10 +22,10 @@ Options -Indexes
     RewriteRule  ^MineCraft/checkserver.php instruments/craft/auth/checkserver.php [L]
     RewriteRule  ^MineCraft/joinserver.php instruments/craft/auth/joinserver.php [L] 
 
-    RewriteRule  ^authenticate$ instruments/MineCraft/auth/auth16x.php [L]
-    RewriteRule  ^invalidate$ instruments/MineCraft/auth/invalidate16x.php [L]
-    RewriteRule  ^refresh$ instruments/MineCraft/auth/refresh16x.php [L]
-    RewriteRule  ^game/joinserver.jsp instruments/MineCraft/auth/joinserver.php [L,NE]
+    RewriteRule  ^authenticate$ instruments/craft/auth/auth16x.php [L]
+    RewriteRule  ^invalidate$ instruments/craft/auth/invalidate16x.php [L]
+    RewriteRule  ^refresh$ instruments/craft/auth/refresh16x.php [L]
+    RewriteRule  ^game/joinserver.jsp instruments/craft/auth/joinserver.php [L,NE]
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

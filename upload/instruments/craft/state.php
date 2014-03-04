@@ -1,5 +1,5 @@
 <?php
-require('../system.php');
+require('../../system.php');
 execute();
 
 loadTool('ajax.php');

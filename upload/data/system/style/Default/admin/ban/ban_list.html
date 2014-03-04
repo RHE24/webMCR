@@ -1,12 +1,13 @@
 <div class="block-header">Список IP с ограничением доступа</div> 
 <div class="block-line"></div>
 
-<form action="index.php" method="get" class="form-inline">
+<form action="index.php?mode=control&amp;do=ipbans" method="post" class="form-inline">
 
-    <input type="hidden" name="mode" value="control" />
-    <input type="hidden" name="do" value="banip" />
-
-    <input type="text" name="ip" placeholder="IP">
+    <?php echo tokenTool('setinput') ?>
+    
+    <input type="text" name="ip" class="input-small" placeholder="IP">
+    <input type="text" name="days" maxlength="3" class="input-small" placeholder="Срок (в днях)">  
+    <input type="text" name="reason" maxlength="255" placeholder="Комментарий">  
     <button type="submit" class="btn">Добавить</button>
 
 </form>
@@ -16,7 +17,7 @@
         <td>IP</td>
         <td>Начало бана</td>
         <td>Завершение бана</td>
-        <td>Тип</td>
+        <td>Причина</td>
         <td>Действия</td>
     </tr>
     

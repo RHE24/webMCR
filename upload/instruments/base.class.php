@@ -1,8 +1,4 @@
 <?php
-define('MCR', '2.42b'); 
-define('PROGNAME', 'webMCR ' . MCR);
-define('FEEDBACK', '<a href="http://drop.catface.ru/index.php?nid=17">' . PROGNAME . '</a> &copy; 2013-2014 NC22');  
-
 class Item 
 {
     protected $viewer;

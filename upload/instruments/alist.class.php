@@ -457,21 +457,21 @@ class ControlManager extends View
     {
     global $bd_users,$bd_names;
     
-        $sql = "SELECT `{$bd_users['id']}` FROM `{$bd_names['users']}`";        
-        $countSql = "SELECT COUNT(*) FROM `{$bd_names['users']}`";
+        $sql = "SELECT `{$bd_users['id']}` FROM `{$bd_names['users']}` ";        
+        $countSql = "SELECT COUNT(*) FROM `{$bd_names['users']}` ";
         $whereSql = '';
-        $orderSql = "ORDER BY {$bd_users['login']} LIMIT " . (10 * ($list - 1)) . ",10";
-        
-        $input = array();
-        
+        $orderSql = "ORDER BY {$bd_users['login']} LIMIT " . (10 * ($list - 1)) . ",10 ";
+
         foreach($input as $key => $like) {
-            
-            if (!isset($bd_users[$key]) or empty($like)) continue; 
+            if (!isset($bd_users[$key]) or empty($like)) {
+                unset($input[$key]);
+                continue; 
+            }
             
             if (!$whereSql) $whereSql .= 'WHERE ';
             else $whereSql .= 'AND ';
             
-            $whereSql .= '`' . $bd_users[$key] . '` LIKE :' . $key;
+            $whereSql .= '`' . $bd_users[$key] . '` LIKE :' . $key . ' ';
                     
             $input = array_replace($input, array($key => '%' . $like . '%'));
         }
@@ -491,10 +491,11 @@ class ControlManager extends View
             $user_group_id = $inf_user->group();
 
             unset($inf_user);
-
             include $this->GetView('user/user_find_string.html'); 
         } 
+        
         $list = ob_get_clean();
+        
         ob_start(); include $this->GetView('user/user_find.html');  
         $html = ob_get_clean();
 
@@ -561,7 +562,7 @@ class ControlManager extends View
 
         ob_start(); 	
 
-        $result = getDB()->ask("SELECT * FROM `{$bd_names['ip_banning']}` ORDER BY ban_until DESC LIMIT ".(10*($list-1)).",10");  
+        $result = getDB()->ask("SELECT * FROM `{$bd_names['ip_banning']}` WHERE `ban_type` = '2' ORDER BY `ban_until` DESC LIMIT ".(10*($list-1)).",10");  
 
         while ( $line = $result->fetch()) {
             
@@ -569,7 +570,8 @@ class ControlManager extends View
             $ban_start = $line['time_start'];
             $ban_end   = $line['ban_until'];
             $ban_type  = $line['ban_type'];
-            $ban_reason  = $line['reason'];			 
+            $ban_reason  = $line['reason'];		
+            if (!$ban_reason) $ban_reason = 'Нет';
 
             include $this->GetView('ban/ban_list_string.html');         
         }

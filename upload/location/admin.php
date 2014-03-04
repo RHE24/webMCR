@@ -102,12 +102,14 @@ if ($do) {
     case 'search':
         
         $input = array(
-            'name' => Filter::input('name', 'get', 'stringLow'),
+            'login' => Filter::input('name', 'get', 'stringLow'),
             'ip' => Filter::input('ip', 'get', 'ip'),
             'group' => Filter::input('group', 'get', 'int')
         );
         
         $get = '';
+        
+        if ($input['group'] === -1) unset($input['group']);
         
         foreach ($input as $key => $value) {
            if (!$value) continue;
@@ -116,6 +118,7 @@ if ($do) {
         
         $controlManager = new ControlManager($sd, 'index.php?mode=control&amp;do=search' . $get . '&amp;');
         $controlManager->setViewBaseDir($styleDir);
+        
         $html .= $controlManager->ShowUserListing($curlist, $input);
  
     break;
@@ -180,6 +183,27 @@ if ($do) {
         break;
     case 'ipbans':
 
+        $banDays = Filter::input('days', 'post', 'int');
+        $banIp = Filter::input('ip', 'post', 'ip', true);
+        $banReason = Filter::input('reason', 'post', 'stringLow');
+        
+        if ($banIp and $banDays) {
+            
+            tokenTool('check');
+            
+            getDB()->ask("DELETE FROM {$bd_names['ip_banning']} "
+                    . "WHERE IP=:ip", array('ip' => $banIp));
+
+            getDB()->ask("INSERT INTO {$bd_names['ip_banning']} (IP, time_start, ban_until, ban_type, reason) "
+                    . "VALUES (:ip, NOW(), NOW()+INTERVAL $banDays DAY, '2', :reason)", 
+                    array(
+                        'ip' => $banIp, 
+                        'reason' => $banReason
+                    ));
+
+            $info .= lng('IP_BANNED');
+        }
+        
         $controlManager = new ControlManager($sd, 'index.php?mode=control&do=ipbans&');
         $controlManager->setViewBaseDir($styleDir);
         $html .= $controlManager->ShowIpBans($curlist);
@@ -220,7 +244,7 @@ switch ($do) {
         if ($user_id)
             $url .= '&amp;user_id=' . $user_id;
 
-        $files_manager = new FileManager($sd . 'other/', $url . '&amp;');
+        $files_manager = new FileManager('other/', $url . '&amp;');
         
         $fileAddForm = $files_manager->ShowAddForm();
         $files = $files_manager->ShowFilesByUser($curlist, $user_id);
@@ -248,7 +272,7 @@ switch ($do) {
     case 'user_delete':
         
         $confirmTrg = Filter::input('confirm', 'post', 'bool');
-        if ($confirmTrg and $ban_user) {
+        if ($confirmTrg and $ban_user and $ban_user->id() != $user->id()) {
             
             tokenTool('check');
             
@@ -258,7 +282,7 @@ switch ($do) {
             unset($ban_user);
         } 
         
-        if ($ban_user)
+        if (isset($ban_user))
             include $viewer->getView($sd . 'user/user_del.html');
 
         break;
@@ -434,20 +458,19 @@ switch ($do) {
         include $viewer->getView($sd . 'group/group.html');
         
         break;
-    case 'server_edit':
-        
+    case 'server_edit':        
         /* POST data check */
         
         $serv_address = Filter::input('address');
         $serv_port =  Filter::input('port', 'post', 'int');
-        $serv_method =  Filter::input('method', 'post', 'int');
         
-        if ($serv_method and $serv_port and $serv_address) {
+        if ($serv_port and $serv_address) {
 
             $serv_name = Filter::input('name');
             $serv_info = Filter::input('info');
-            
+            $serv_method =  Filter::input('method', 'post', 'int');
             $serv_rcon = Filter::input('rcon_pass');
+            
             if ($serv_rcon and $serv_method != 2 and $serv_method != 3) $serv_rcon = false;
             
             $serv_s_user = Filter::input('json_user');
@@ -660,33 +683,6 @@ switch ($do) {
 
         include $viewer->getView($sd . 'constants.html');
         break; 
-    
-    case 'banip':
-        
-        $banDays = Filter::input('day', 'post', 'int');
-        $banIp = Filter::input('ip', 'post', 'ip', true);
-        $banReason = Filter::input('ip', 'post', 'stringLow');
-        
-        if ($banIp and $banDays) {
-            
-            tokenTool('check');
-            
-            getDB()->ask("DELETE FROM {$bd_names['ip_banning']} "
-                    . "WHERE IP=:ip", array('ip' => $banIp));
-
-            getDB()->ask("INSERT INTO {$bd_names['ip_banning']} (IP, time_start, ban_until, ban_type, reason) "
-                    . "VALUES (:ip, NOW(), NOW()+INTERVAL $banDays DAY, '2', :reason)", 
-                    array(
-                        'ip' => $banIp, 
-                        'reason' => $banReason
-                    ));
-
-            $info .= lng('IP_BANNED');
-        }
-        
-        include $viewer->getView($sd . 'ban/ban_ip.html');        
-        break;
-        
     case 'banip_delete':
         
         $ip = Filter::input('ip', 'get');
