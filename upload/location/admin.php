@@ -206,8 +206,9 @@ if ($do) {
         $deleteUser = Filter::input('user_delete', 'get', 'int');
         
         if ($deleteUser and tokenTool('check', false)) {             
-            getDB()->ask("DELETE FROM {$bd_names['user_banning']} WHERE `id`='$deleteUser'");
-            $ban_user->changeGroup(2);
+            getDB()->ask("DELETE FROM {$bd_names['user_banning']} WHERE `user_id`='$deleteUser'");
+            $deleteUser = new User($deleteUser, $bd_users['login']);
+            $deleteUser->changeGroup(2);
             $info .= lng('USER_UNBANNED');
         }
         
@@ -222,8 +223,7 @@ if ($do) {
             if (!$ban_user->exist()) break;
             if ($banIp) BanIP($ban_user->ip(), $banReason, $banDays);
             
-            getDB()->ask("DELETE FROM {$bd_names['user_banning']} WHERE `id`='{$ban_user->id()}'");
-
+            getDB()->ask("DELETE FROM {$bd_names['user_banning']} WHERE `user_id`='{$ban_user->id()}'");
             getDB()->ask("INSERT INTO {$bd_names['user_banning']} (user_id, time_start, ban_until, reason, admin_id) "
                     . "VALUES ('". $ban_user->id() ."', NOW(), NOW()+INTERVAL $banDays DAY, :reason, '". $user->id() ."')", 
                     array(

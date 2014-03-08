@@ -602,7 +602,7 @@ class ControlManager extends View
             $ban_user  = new User((int)$line['user_id']);
             $ban_start = $line['time_start'];
             $ban_end   = $line['ban_until'];
-            $ban_type  = $line['ban_type'];
+            $ban_ip   = $ban_user->ip();
             $ban_reason  = $line['reason'];
             $ban_by  = new User((int) $line['admin_id']);
             if (!$ban_reason) $ban_reason = 'Нет';

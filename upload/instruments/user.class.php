@@ -320,7 +320,7 @@ class User
     {
         global $bd_names;
         
-        if ($tmp_user->lvl()) return false;
+        if ($this->lvl()) return false;
         
         RefreshBans();
         
