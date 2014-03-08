@@ -34,7 +34,6 @@ switch ($method) {
 
         break;
     case 'download':
-        execute();
         loadTool('upload.class.php');
         DBinit('action_download');
 

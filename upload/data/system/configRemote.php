@@ -6,7 +6,6 @@
 
 $configRemote = array(
     'encoder' => 'xauth',
-    'encoderConfig' => false, // @todo remove encoder configs, use extend method for exist encoders
     
     'tableName' => 'xauth',
     'tableColumns' => array(

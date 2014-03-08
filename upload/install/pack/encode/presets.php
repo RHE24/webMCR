@@ -8,93 +8,61 @@
  */
 
 $preset = array(
-    'BlowfishV1' => array(
+    'blowfish' => array(
         'name' => 'BlowfishEncoder v1.0',
         'column' => 'binary(38)',
-        'config' => array(
-            'p_encode' => 'Blowfish',
-        ),
         'cms' => array('usual')
     ),
-    'DLE' => array(
+    
+    'md5Dle' => array(
         'name' => 'DLE',
         'column' => 'char(32)',
-        'config' => array(
-            'p_encode' => 'Md5',
-            'p_md5bin' => false,
-            'p_md5salt' => false,
-            'p_md5iterations' => 2,
-        ),
         'cms' => array('usual', 'dle')
     ),
-    'Md5V1' => array(
+    
+    'md5' => array(
         'name' => 'webMCR Md5v1 (<= v2.4b)',
         'column' => 'char(32)',
-        'config' => array(
-            'p_encode' => 'Md5',
-            'p_md5bin' => false,
-            'p_md5salt' => false,
-            'p_md5iterations' => 1,
-        ),
         'cms' => array('usual')
     ),
-    'Md5V2' => array(
+    
+    'md5Mcr' => array(
         'name' => 'webMCR Md5v2',
         'column' => 'binary(32)',
-        'config' => array(
-            'p_encode' => 'Md5',
-            'p_md5bin' => true,
-            'p_md5salt' => true,
-            'p_md5iterations' => 256,
-        ),
         'cms' => array('usual')
     ),
     
     // compatible with webMCR, but require set Column type    
     
-    'AuthMeSha256' => array( 
+    'authmeSha256' => array( 
         'name' => 'AuthMe SHA 256',
-        'config' => array(
-            'p_encode' => 'authmeSha256',
-        ),
         'cms' => array('authme')
     ),
     
     // compatible with webMCR, but require set Column type
     
-    'xAuthWhirlpool' => array( 
+    'xauthWhirlpool' => array( 
         'name' => 'xAuth Whirlpool',
-        'config' => array(
-            'p_encode' => 'xauthWhirlpool',
-        ),
         'cms' => array('xauth')
     ),
-    'xenForoApi' => array(
+    
+    'xenforoApi' => array(
         'name' => 'Xenforo API Authenticate',
-        'config' => array(
-            'p_encode' => 'xenforoApi',
-        ),
         'cms' => array('xenforo')
     ),
-    'WpMd5' => array(
+    
+    'wpMd5' => array(
         'name' => 'WordPress Md5',
-        'config' => array(
-            'p_encode' => 'wpMd5',
-        ),
         'cms' => array('wp')
     ),
-    'JoomlaMd5' => array(
+    
+    'joomlaMd5' => array(
         'name' => 'Joomla! Md5',
-        'config' => array(
-            'p_encode' => 'joomlaMd5',
-        ),
         'cms' => array('joomla')
     ),
-    'IpbMd5' => array(
+    
+    'ipbMd5' => array(
         'name' => 'Invision Power Board Md5',
-        'config' => array(
-            'p_encode' => 'ipbMd5',
-        ),
         'cms' => array('ipb')
     ),
 );
@@ -105,12 +73,12 @@ $preset = array(
  */
 
 $default = array(
-    'usual' => 'Md5V2',
-    'ipb' => 'IpbMd5',
-    'joomla' => 'JoomlaMd5',
-    'wp' => 'WpMd5',
-    'xenforo' => 'xenForoApi',
+    'usual' => 'md5Mcr',
+    'ipb' => 'ipbMd5',
+    'joomla' => 'joomlaMd5',
+    'wp' => 'wpMd5',
+    'xenforo' => 'xenforoApi',
     'xauth' => 'xauthWhirlpool',
-    'authme' => 'AuthMeSha256',
-    'dle' => 'DLE',
+    'authme' => 'authmeSha256',
+    'dle' => 'md5Dle',
 );

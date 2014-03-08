@@ -46,11 +46,6 @@ switch ($mode) {
 
 configInit($mode);
 
-$presetKey = Filter::input('encode', 'post', 'string', true);
-
-EncoderPreset::init($mode, $presetKey);
-$encodePreset = EncoderPreset::getPreset(); 
-
 define('MCR_STYLE', getWay('style'));
 define('STYLE_URL', $site_ways['style']);
 define('DEF_STYLE_URL', STYLE_URL . View::DEFAULT_THEME . '/');
@@ -333,11 +328,13 @@ switch ($step) {
             
             $config['rewrite'] = isModeRewriteEnabled();
             $config['s_root'] = BASE_URL;
+
+            EncoderPreset::init($mode, Filter::input('encode', 'post', 'string', true));
             
             include './pack/sql/sql_common.php';
             if (!$main_cms)
                 include './pack/sql/sql_usual.php';
-                        
+                       
             $passColumn = getDB()->getColumnType($bd_names['users'], $bd_users['password']);
             $encode = EncoderPreset::getOptions();
 
@@ -345,10 +342,10 @@ switch ($step) {
                 $info .= 'Несовместимый тип поля '. $passColumn .' ( требуется '.  $encode['column'] .') '
                       . 'для режима шифрования. (' . $encode['name'] . ')';
                 break;
-            }          
+            }
             
-            $config = array_replace($config, $encode['config']);  
-
+            $config['p_encode'] = EncoderPreset::getEncoder();
+            
             configSave();    
             $step = 2; 
         }
@@ -457,6 +454,7 @@ switch ($step)
     include $viewer->getView('install_method.html'); 	
     break;
     case 1: 
+    EncoderPreset::init($mode, Filter::input('encode', 'post', 'string', true));
     include $viewer->getView('install.html'); 	
     break;
     case 2: 

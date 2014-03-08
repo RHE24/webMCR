@@ -43,7 +43,7 @@ class RemoteAuth
         loadTool($this->preset['encoder'] . 'Encoder.class.php', 'auth/encoder/');
         
         $class = ucfirst($this->preset['encoder']) . 'Encoder';
-        $this->encoder = new $class($this->preset['encoderConfig']);
+        $this->encoder = new $class();
   
         $class = $config['db_driver'] . 'Driver';
         $this->link = new $class();

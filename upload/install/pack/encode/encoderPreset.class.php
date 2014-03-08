@@ -8,7 +8,7 @@ class EncoderPreset
     private static $cms = false;
     private static $list;
     
-    public static function init($cms, $presetKey = false) 
+    public static function init($cms, $encoderKey = false) 
     {
         include MCR_ROOT . 'install/pack/encode/presets.php';        
         self::$cms = $cms;
@@ -17,18 +17,18 @@ class EncoderPreset
             self::$encoder = $default[self::$cms];
         }     
                 
-        if ($presetKey !== false and array_key_exists($presetKey, $preset)) {
-            self::$encoder = $presetKey;
+        if ($encoderKey !== false and array_key_exists($encoderKey, $preset)) {
+            self::$encoder = $encoderKey;
         }
         
         if (!self::$encoder) {
-            exit('Fatal error: Encoder ' . $presetKey . ' unexist');
+            exit('Fatal error: Encoder ' . $encoderKey . ' unexist');
         }
         
         self::$options = $preset[self::$encoder];
         
         if (array_search(self::$cms, self::$options['cms']) === false) {
-            exit('Fatal error: Encoder ' . $presetKey . ' not available for ' . self::$cms);
+            exit('Fatal error: Encoder ' . $encoderKey . ' not available for ' . self::$cms);
         } 
         
         foreach ($preset as $encoder => $data) {       
@@ -38,12 +38,12 @@ class EncoderPreset
         self::$list = $preset;
     }
     
-    public static function getPresetNum() 
+    public static function getEncoderNum() 
     {
         return sizeof(self::$list);
     }
     
-    public static function getPreset() 
+    public static function getEncoder() 
     {
         return self::$encoder;
     }
@@ -55,7 +55,7 @@ class EncoderPreset
     
     public static function getColName()
     {
-        if (self::getPresetNum() != 1 and empty(self::$options['column']))
+        if (self::getEncoderNum() != 1 and empty(self::$options['column']))
             exit('Fatal error: Require set column type ' . self::$encoder);        
         elseif (empty(self::$options['column'])) return false;
         return self::$options['column'];
