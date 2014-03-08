@@ -1,0 +1,23 @@
+<div class="block-header">Список заблокированных пользователей</div> 
+<div class="block-line"></div>
+
+<table class="table" id="mainTable">
+    <tr class="topRow">
+        <td>IP</td>
+        <td>Пользователь</td>
+        <td>Начало бана</td>
+        <td>Завершение бана</td>
+        <td>Причина</td>
+        <td>Выдал</td>
+        <td>Действия</td>
+    </tr>
+    
+    <?php if(!$list) : ?>    
+    
+    <tr>
+       <td colspan="7">Не одной записи не найдено</td>
+    </tr>    
+    
+    <?php else : echo $list; endif; ?>
+    
+</table>

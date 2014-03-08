@@ -316,6 +316,23 @@ class User
             return false;
     }
 
+    public function isBanned() 
+    {
+        global $bd_names;
+        
+        if ($tmp_user->lvl()) return false;
+        
+        RefreshBans();
+        
+        $line = getDB()->fetchRow("SELECT COUNT(*) FROM `{$bd_names['user_banning']}` WHERE `user_id`='{$this->id}'", false, 'num');
+        if ((int) $line[0]) return true;
+        else {
+            $this->changeGroup(2);        
+            return false;        
+        }
+    }
+            
+    
     public function setStatistic($field_name, $var)
     {
         global $bd_users;
@@ -351,7 +368,7 @@ class User
 
 
             $line = getDB()->fetchRow("SELECT `{$bd_money['money']}` FROM `{$bd_names['iconomy']}` "
-                    . "WHERE `{$bd_money['login']}`=:login", array('login' => $this->name));
+                    . "WHERE `{$bd_money['login']}`=:login", array('login' => $this->name), 'num');
 
 
             if (!$line) {

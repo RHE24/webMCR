@@ -5,23 +5,19 @@
     <td><b><?php echo $user_name ?></b></td>
     <td><a href="index.php?mode=control&amp;do=search&amp;ip=<?php echo $user_ip ?>"><?php echo $user_ip ?></td>
     <td> 
-        <form action="index.php" class="form-inline" method="get">
-
+        <form action="index.php" style="margin: 0px;" method="get">
             <input type="hidden" name="user_id" value="<?php echo $user_id ?>" />
             <input type="hidden" name="mode" value="control" />
 
             <select name="do" size="1">
                 
                 <option value="user_profile">Изменить профиль</option>
-                <option value="user_ban">Заблокировать</option>
-                <option value="user_delete">Удалить аккаунт</option>
-                
-            </select>
-            
+                <option value="userbans">Заблокировать</option>
+                <option value="user_delete">Удалить аккаунт</option>                
+            </select>            
             <a href="#" onclick="GetParent(this, 'FORM').submit(); return false;">
                 <img src="<?php View::URL('img/edit.png') ?>" alt="Выбор опции" width="16" height="16" class="editButton"/>
-            </a>
-            
+            </a>            
         </form>
         
     </td>

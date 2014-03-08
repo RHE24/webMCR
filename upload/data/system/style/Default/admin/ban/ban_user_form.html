@@ -1,0 +1,16 @@
+<div class="block-header">Добавить пользователя</div> 
+<div class="block-line"></div>
+
+<form action="index.php?mode=control&amp;do=userbans" method="post" class="form-inline">
+
+    <?php echo tokenTool('setinput') ?>
+    
+    <input type="text" name="name" class="input-small" placeholder="Пользователь" value="<?php echo $user_name ?>">
+    <input type="text" name="days" maxlength="3" class="input-small" placeholder="Срок (в днях)">  
+    <input type="text" name="reason" maxlength="255" placeholder="Комментарий">
+    <label class="checkbox">
+        <input type="checkbox" name="ip" value="1" checked="checked"> Бан IP
+    </label>
+    <button type="submit" class="btn">Добавить</button>
+
+</form>

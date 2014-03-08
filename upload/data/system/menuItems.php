@@ -65,6 +65,26 @@ $menu_items = array (
       'active' => false,
       'inner_html' => '',
     ),
+    'banip' => 
+    array (
+      'name' => 'Баны по IP',
+      'url' => 'control/ipbans/',
+      'parent_id' => 'admin',
+      'lvl' => 15,
+      'permission' => -1,
+      'active' => false,
+      'inner_html' => '',
+    ),
+    'ban' => 
+    array (
+      'name' => 'Баны',
+      'url' => 'control/userbans/',
+      'parent_id' => 'admin',
+      'lvl' => 15,
+      'permission' => -1,
+      'active' => false,
+      'inner_html' => '',
+    ),    
     'control' => 
     array (
       'name' => 'Пользователи',
@@ -119,16 +139,6 @@ $menu_items = array (
     array (
       'name' => 'Сайт',
       'url' => 'control/constants/',
-      'parent_id' => 'admin',
-      'lvl' => 15,
-      'permission' => -1,
-      'active' => false,
-      'inner_html' => '',
-    ),
-    'rcon' => 
-    array (
-      'name' => 'RCON',
-      'url' => 'control/rcon/',
       'parent_id' => 'admin',
       'lvl' => 15,
       'permission' => -1,

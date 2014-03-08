@@ -37,7 +37,7 @@ $auth_user = new User($login, $bd_users['login']);
 
 if (!$auth_user->id())
     logExit("[auth.php] login process [Unknown user] User [$login] Password [$password]");
-if ($auth_user->lvl() <= 1)
+if ($auth_user->isBanned() or $auth_user->lvl() <= 1) // only confirmed and not banned users allowed
     exit("Bad login");
 if (!$auth_user->authenticate($password))
     logExit("[auth.php] login process [Wrong password] User [$login] Password [$password]");

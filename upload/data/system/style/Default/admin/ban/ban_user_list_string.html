@@ -1,0 +1,9 @@
+<tr>
+   <td><a onclick="LoadProfile('customp', <?php echo $ban_user->id() ?>); return false" href="#"><?php echo $ban_user->name() ?></a></td>
+   <td><b><a href="index.php?mode=control&amp;do=search&amp;ip=<?php echo $ban_ip ?>"><?php echo $ban_ip ?></a></b></td>
+   <td><?php echo $ban_start ?></td>
+   <td><?php echo $ban_end ?></td>
+   <td><?php echo $ban_reason ?></td>
+   <td><a onclick="LoadProfile('customp', <?php echo $ban_by->id() ?>); return false" href="#"><?php echo $ban_by->name() ?></a></td>
+   <td><a href="index.php?mode=control&amp;do=userbans&amp;user_delete=<?php echo $ban_user->id() ?>&amp;token_data=<?php echo tokenTool('get') ?>">Удалить</a></td>
+</tr>

@@ -38,8 +38,9 @@ if ($out) {
         aExit(1, lng('AUTH_FAIL') . '.<br /> <a href="#" style="color: #656565;" onclick="RestoreStart(); return false;">' . lng('AUTH_RESTORE') . ' ?</a>');
     }
 
-    if ($tmp_user->lvl() <= 0)
-        aExit(4, lng('USER_BANNED'));
+    if ($tmp_user->isBanned()) {
+        aExit(4, lng('USER_BANNED')); 
+    }
 
     $tmp_user->login(Filter::input('save', 'post', 'bool'));
     aExit(0, 'success');

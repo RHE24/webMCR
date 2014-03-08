@@ -560,8 +560,7 @@ class ControlManager extends View
 
         RefreshBans();
 
-        ob_start(); 	
-
+        ob_start();
         $result = getDB()->ask("SELECT * FROM `{$bd_names['ip_banning']}` WHERE `ban_type` = '2' ORDER BY `ban_until` DESC LIMIT ".(10*($list-1)).",10");  
 
         while ( $line = $result->fetch()) {
@@ -570,23 +569,55 @@ class ControlManager extends View
             $ban_start = $line['time_start'];
             $ban_end   = $line['ban_until'];
             $ban_type  = $line['ban_type'];
-            $ban_reason  = $line['reason'];		
+            $ban_reason  = $line['reason'];                      
+            $ban_by_id = (int) $line['admin_id'];
+            if ($ban_by_id) $ban_by = new User($ban_by_id);
             if (!$ban_reason) $ban_reason = 'Нет';
 
-            include $this->GetView('ban/ban_list_string.html');         
+            include $this->GetView('ban/ban_ip_list_string.html');         
         }
         
         $list = ob_get_clean(); 
         
-        ob_start();   
-        include $this->GetView('ban/ban_list.html');         
-        
+        ob_start(); include $this->GetView('ban/ban_ip_list.html');                 
         $html = ob_get_clean();
 
         $result = getDB()->fetchRow("SELECT COUNT(*) FROM `{$bd_names['ip_banning']}`", false, 'num');
 
         $html .= $this->showArrows($this->work_skript, $list, $result[0], 10);
 
+        return $html;
+    }
+    
+    public function ShowUserBans($list) {
+    global $bd_names;
+
+        RefreshBans();
+
+        ob_start();
+        $result = getDB()->ask("SELECT * FROM `{$bd_names['user_banning']}` ORDER BY `ban_until` DESC LIMIT ".(10*($list-1)).",10");  
+
+        while ( $line = $result->fetch()) {
+            
+            $ban_user  = new User((int)$line['user_id']);
+            $ban_start = $line['time_start'];
+            $ban_end   = $line['ban_until'];
+            $ban_type  = $line['ban_type'];
+            $ban_reason  = $line['reason'];
+            $ban_by  = new User((int) $line['admin_id']);
+            if (!$ban_reason) $ban_reason = 'Нет';
+
+            include $this->GetView('ban/ban_user_list_string.html');         
+        }
+        
+        $list = ob_get_clean(); 
+        
+        ob_start(); include $this->GetView('ban/ban_user_list.html');        
+        $html = ob_get_clean();
+
+        $result = getDB()->fetchRow("SELECT COUNT(*) FROM `{$bd_names['user_banning']}`", false, 'num');
+
+        $html .= $this->showArrows($this->work_skript, $list, $result[0], 10);
         return $html;
     }
 }

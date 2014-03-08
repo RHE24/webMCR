@@ -1,7 +1,8 @@
 <?php
 define('MCR', '2.42b'); 
 define('PROGNAME', 'webMCR ' . MCR);
-    
+define('FEEDBACK', '<a href="http://drop.catface.ru/index.php?nid=17">' . PROGNAME . '</a> &copy; 2013-2014 NC22');  
+
 function execute() 
 {  
     global $config, 
@@ -9,7 +10,8 @@ function execute()
            $bd_money, 
            $bd_users, 
            $site_ways,
-           $user;
+           $user,
+           $mcrLocale;
     
     error_reporting(E_ALL);
     
@@ -44,12 +46,10 @@ function execute()
     define('MCR_LANG', 'ru');
     define('MCR_STYLE', getWay('style'));
     define('STYLE_URL', $site_ways['style']); // deprecated
-    define('DEF_STYLE_URL', STYLE_URL . View::DEFAULT_THEME . '/');
-    define('FEEDBACK', '<a href="http://drop.catface.ru/index.php?nid=17">' . PROGNAME . '</a> &copy; 2013-2014 NC22');  
+    define('DEF_STYLE_URL', STYLE_URL . View::DEFAULT_THEME . '/');    
     define('BASE_URL', $config['s_root']);   
     
     date_default_timezone_set($config['timezone']);
-    
     require(getWay('system') . 'locale/' . MCR_LANG.'.php');
     
     AuthCore::setDriver($config['p_logic'], $config['p_encode']);
@@ -165,9 +165,9 @@ function getWay($id)
 
 function lng($key, $lang = false)
 {
-    global $MCR_LANG;
-
-    return isset($MCR_LANG[$key]) ? $MCR_LANG[$key] : $key;
+    global $mcrLocale;
+    
+    return isset($mcrLocale[$key]) ? $mcrLocale[$key] : $key;
 }
 
 function POSTGood($post_name, $format = array('png'))
@@ -288,6 +288,10 @@ function RefreshBans()
     getDB()->ask("DELETE FROM {$bd_names['ip_banning']} "
             . "WHERE (ban_until<>'0000-00-00 00:00:00') "
             . "AND (ban_until<NOW())");
+    
+    getDB()->ask("DELETE FROM {$bd_names['user_banning']} "
+        . "WHERE (ban_until<>'0000-00-00 00:00:00') "
+        . "AND (ban_until<NOW())");
 }
 
 function vtxtlog($string)
@@ -309,9 +313,10 @@ function vtxtlog($string)
     fclose($fp);
 }
 
-function tokenTool($mode = 'set')
+function tokenTool($mode = 'set', $exit = true)
 {
-    global $content_js;
+    global $content_js,
+           $mcrToken;
 
     if (!isset($_SESSION)) {
         session_start();
@@ -324,29 +329,27 @@ function tokenTool($mode = 'set')
 
         if (empty($_SESSION['token_data']) or
             $_SESSION['token_data'] !== $token) {
-
-            if (isset($_SESSION['token_data']))
-                unset($_SESSION['token_data']);
-            exit(lng('TOKEN_FAIL'));
-
+            
+            if ($exit) exit(lng('TOKEN_FAIL'));
             return false;
         }
-
-        unset($_SESSION['token_data']);
+        
         return true;
-    } elseif ($mode == 'set') {
-
-        $_SESSION['token_data'] = randString(32);
-        $content_js .= '<script type="text/javascript">var token_data = "' . $_SESSION['token_data'] . '";</script>';
+    } 
+    
+    if (!isset($mcrToken)) { 
+        $_SESSION['token_data'] = randString(32); 
+        $mcrToken = $_SESSION['token_data'];
+    }
+    
+    if ($mode == 'set') {
+        $content_js .= '<script type="text/javascript">var token_data = "' . $mcrToken . '";</script>';
         return true;
     } elseif ($mode == 'setinput') {
-
-        $_SESSION['token_data'] = randString(32);
-        return '<input type="hidden" name="token_data" id="token_data" value="' . $_SESSION['token_data'] . '" />';
-    } else { 
-        $_SESSION['token_data'] = randString(32);
-        return $_SESSION['token_data'];
-    }
+        return '<input type="hidden" name="token_data" id="token_data" value="' . $mcrToken . '" />';
+    } 
+    
+    return $_SESSION['token_data'];
 }
 
 function ActionLog($last_info = 'default_action')

@@ -1,0 +1,13 @@
+<div class="block-header">Добавить IP</div> 
+<div class="block-line"></div>
+
+<form action="index.php?mode=control&amp;do=ipbans" method="post" class="form-inline">
+
+    <?php echo tokenTool('setinput') ?>
+    
+    <input type="text" name="ip" class="input-small" placeholder="IP" value="<?php echo $user_ip ?>">
+    <input type="text" name="days" maxlength="3" class="input-small" placeholder="Срок (в днях)">  
+    <input type="text" name="reason" maxlength="255" placeholder="Комментарий">  
+    <button type="submit" class="btn">Добавить</button>
+
+</form>

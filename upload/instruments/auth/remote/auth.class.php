@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Authorization throw remote account server, using configuration from 'configRemote.php'
+ * methods 'authenticate' and 'create' calls when webMCR actual method calls to
+ * If enabled
+ * authenticate method calls when webMCR user try to login and if it fails, user cant auth in webMCR
+ * create method calls when webMCR user is created, remote user will be created too.
+ * 
+ * @todo at current moment NOT tested and may be will be finished in future
+ */
+
 class RemoteAuth
 {
     private $preset = null;

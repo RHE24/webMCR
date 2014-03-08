@@ -35,6 +35,8 @@ $html = '';
 $info = '';
 $server_info = '';
 $user_id = Filter::input('user_id', 'post', 'int', true);
+$user_name = '';
+$user_ip = '';
 $ban_user = false;
 
 if ($user_id === false) $user_id = Filter::input('user_id', 'get', 'int', true);
@@ -63,6 +65,24 @@ function RatioList($selectid = 1)
         $html_ratio .= '<option value="' . $i . '" ' . (($i == $selectid) ? 'selected' : '') . '>' . (64 * $i) . 'x' . (32 * $i) . ' | ' . (22 * $i) . 'x' . (17 * $i) . '</option>';
 
     return $html_ratio;
+}
+
+function BanIP($banIp, $banReason, $banDays)
+{
+    global $bd_names, $user;
+    if ($banIp == $user->ip()) return false;
+    
+    getDB()->ask("DELETE FROM {$bd_names['ip_banning']} "
+            . "WHERE IP=:ip", array('ip' => $banIp));
+
+    getDB()->ask("INSERT INTO {$bd_names['ip_banning']} (IP, time_start, ban_until, ban_type, reason, admin_id) "
+            . "VALUES (:ip, NOW(), NOW()+INTERVAL $banDays DAY, '2', :reason, '". $user->id() ."')", 
+            array(
+                'ip' => $banIp, 
+                'reason' => $banReason
+            ));    
+    
+    return true;
 }
  
 if ($do) {
@@ -181,28 +201,68 @@ if ($do) {
         $html .= ob_get_clean();        
         
         break;
-    case 'ipbans':
+    case 'userbans':
+        
+        $deleteUser = Filter::input('user_delete', 'get', 'int');
+        
+        if ($deleteUser and tokenTool('check', false)) {             
+            getDB()->ask("DELETE FROM {$bd_names['user_banning']} WHERE `id`='$deleteUser'");
+            $ban_user->changeGroup(2);
+            $info .= lng('USER_UNBANNED');
+        }
+        
+        $banDays = Filter::input('days', 'post', 'int');
+        $banName = Filter::input('name', 'post', 'stringLow', true);
+        $banReason = Filter::input('reason', 'post', 'stringLow');
+        $banIp = Filter::input('ip', 'post', 'bool');
+        
+        if ($banName and $banDays and $banName != $user->name() and tokenTool('check', false)) {
+            $ban_user = new User($banName, $bd_users['login']);
+            
+            if (!$ban_user->exist()) break;
+            if ($banIp) BanIP($ban_user->ip(), $banReason, $banDays);
+            
+            getDB()->ask("DELETE FROM {$bd_names['user_banning']} WHERE `id`='{$ban_user->id()}'");
 
+            getDB()->ask("INSERT INTO {$bd_names['user_banning']} (user_id, time_start, ban_until, reason, admin_id) "
+                    . "VALUES ('". $ban_user->id() ."', NOW(), NOW()+INTERVAL $banDays DAY, :reason, '". $user->id() ."')", 
+                    array(
+                        'reason' => $banReason
+                    ));
+
+            $info .= lng('USER_BANNED');
+        }
+        
+        if (!isset($user_name)) $user_name = '';
+        ob_start(); include $viewer->getView($sd . 'ban/ban_user_form.html');
+        $html .= ob_get_clean();      
+        
+        $controlManager = new ControlManager($sd, 'index.php?mode=control&do=ipbans&');
+        $controlManager->setViewBaseDir($styleDir);
+        $html .= $controlManager->ShowUserBans($curlist);
+        
+    break;
+    case 'ipbans':
+        
+        $deleteIp = Filter::input('ip_delete', 'get', 'ip');
+        
+        if ($deleteIp and tokenTool('check', false)) {             
+            getDB()->ask("DELETE FROM {$bd_names['ip_banning']} WHERE `IP`=:ip", array('ip' => $deleteIp));
+            $info .= lng('IP_UNBANNED') . ' ( ' . $deleteIp . ') ';
+        }
+        
         $banDays = Filter::input('days', 'post', 'int');
         $banIp = Filter::input('ip', 'post', 'ip', true);
         $banReason = Filter::input('reason', 'post', 'stringLow');
         
-        if ($banIp and $banDays) {
-            
-            tokenTool('check');
-            
-            getDB()->ask("DELETE FROM {$bd_names['ip_banning']} "
-                    . "WHERE IP=:ip", array('ip' => $banIp));
-
-            getDB()->ask("INSERT INTO {$bd_names['ip_banning']} (IP, time_start, ban_until, ban_type, reason) "
-                    . "VALUES (:ip, NOW(), NOW()+INTERVAL $banDays DAY, '2', :reason)", 
-                    array(
-                        'ip' => $banIp, 
-                        'reason' => $banReason
-                    ));
-
+        if ($banIp and $banDays and tokenTool('check', false)) {
+            BanIP($banIp, $banReason, $banDays);
             $info .= lng('IP_BANNED');
         }
+        
+        if (!isset($user_ip)) $user_ip = '';
+        ob_start(); include $viewer->getView($sd . 'ban/ban_ip_form.html');
+        $html .= ob_get_clean();      
         
         $controlManager = new ControlManager($sd, 'index.php?mode=control&do=ipbans&');
         $controlManager->setViewBaseDir($styleDir);
@@ -246,28 +306,10 @@ switch ($do) {
 
         $files_manager = new FileManager('other/', $url . '&amp;');
         
-        $fileAddForm = $files_manager->ShowAddForm();
+        $content_main .= $files_manager->ShowAddForm();
         $files = $files_manager->ShowFilesByUser($curlist, $user_id);
         
         include $viewer->getView($sd . 'filelist.html');          
-        break;
-        
-    case 'user_ban':
-        
-        // TODO доделать см. user_ban.html
-        
-        $confirmTrg = Filter::input('confirm', 'post', 'bool');
-        $user_name = ($ban_user) ? $ban_user->name() : '';
-        
-        if ($confirmTrg and $ban_user) {
-            
-            tokenTool('check');
-            
-            $ban_user->changeGroup(2);
-            $info .= lng('USER_BANNED');
-        }
-        
-        include $viewer->getView($sd . 'user/user_ban.html');
         break;
     case 'user_delete':
         
@@ -395,7 +437,7 @@ switch ($do) {
                 $cat_desc = $cat_item->GetDescription();
                 $cat_priority = $cat_item->GetPriority();
 
-                $viewer->getView($sd . 'category/category_edit.html');
+                include $viewer->getView($sd . 'category/category_edit.html');
                 if (!$cat_item->IsSystem())
                     include $viewer->getView($sd . 'category/category_delete.html');
             }
@@ -683,18 +725,6 @@ switch ($do) {
 
         include $viewer->getView($sd . 'constants.html');
         break; 
-    case 'banip_delete':
-        
-        $ip = Filter::input('ip', 'get');
-        
-        if (!empty($ip) and preg_match("/[0-9.]+$/", $ip)) {
-            
-            tokenTool('check');
-             
-            getDB()->ask("DELETE FROM {$bd_names['ip_banning']} WHERE IP=:ip", array('ip' => $ip));
-            $info .= lng('IP_UNBANNED') . ' ( ' . $ip . ') ';
-        }
-        break;
 }
 
 $html .= ob_get_clean(); 

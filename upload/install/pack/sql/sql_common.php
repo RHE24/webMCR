@@ -126,8 +126,20 @@ getDB()->ask("CREATE TABLE IF NOT EXISTS `{$bd_names['ip_banning']}` (
   `time_start` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `ban_until` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `ban_type` tinyint(1) NOT NULL DEFAULT 1,
+  `admin_id` bigint(20) DEFAULT NULL, 
   `reason` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`IP`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+
+getDB()->ask("CREATE TABLE IF NOT EXISTS `{$bd_names['user_banning']}` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL,
+  `time_start` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `ban_until` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `admin_id` bigint(20) DEFAULT NULL, 
+  `reason` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),  
+  UNIQUE KEY `User_id` (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
 
 getDB()->ask("CREATE TABLE IF NOT EXISTS `{$bd_names['data']}` (
@@ -147,9 +159,7 @@ getDB()->ask("CREATE TABLE IF NOT EXISTS `{$bd_names['action_log']}` (
 
 /* DEFAULT INFO ADD */
 
-$count = getDB()->fetchRow("SELECT COUNT(*) FROM `{$bd_names['news_categorys']}` WHERE `name`='Без категории'", false, 'num');
-if (!(int)$count[0])
-    getDB()->ask("INSERT INTO `{$bd_names['news_categorys']}` (`name`) VALUES ('Без категории');");
+getDB()->ask("INSERT IGNORE INTO `{$bd_names['news_categorys']}` (`id`, `name`) VALUES (1, 'Без категории');");
 
 getDB()->ask("INSERT IGNORE INTO `{$bd_names['data']}` (`property`, `value`) VALUES
 ('latest-game-build', '10746'),
@@ -231,4 +241,9 @@ if (!getDB()->isColumnExist($bd_names['comments'], 'item_type')) {
     
     getDB()->ask("ALTER TABLE `{$bd_names['news']}` ADD `discus` tinyint(1) NOT NULL DEFAULT 1;");
     getDB()->ask("ALTER TABLE `{$bd_names['news']}` ADD `comments` int(10) NOT NULL DEFAULT 0;");
+}
+
+/* 2.42 UPDATE */
+if (!getDB()->isColumnExist($bd_names['ip_banning'], 'admin_id')) {
+    getDB()->ask("ALTER TABLE `{$bd_names['ip_banning']}` ADD `admin_id` bigint(20) DEFAULT NULL;");
 }

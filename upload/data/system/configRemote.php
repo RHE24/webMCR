@@ -1,12 +1,12 @@
 <?php
 /**
  * Options for remote authorization server
- * @todo At current moment disabled by default and not tested (tooooo lazzzzzzzzzy ^___^ )
+ * @todo At current moment disabled by default and NOT tested
  */
 
 $configRemote = array(
     'encoder' => 'xauth',
-    'encoderConfig' => false,
+    'encoderConfig' => false, // @todo remove encoder configs, use extend method for exist encoders
     
     'tableName' => 'xauth',
     'tableColumns' => array(

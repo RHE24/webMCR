@@ -1,6 +1,7 @@
 <?php
 $bd_names = array(
-    'users' => 'accounts',
+    'users' => 'accounts',    
+    'user_banning' => 'user_banning',
     'likes' => 'likes',
     'ip_banning' => 'ip_banning',
     'news' => 'news',
@@ -41,7 +42,7 @@ $config = array(
     /* system */
     
     'timezone' => 'Asia/Vladivostok',
-    'default_skin' => false,
+    'default_skin' => true,
     'sbuffer' => true,
     'rewrite' => true,
     'log' => false,

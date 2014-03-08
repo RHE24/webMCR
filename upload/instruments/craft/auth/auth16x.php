@@ -40,7 +40,7 @@ $auth_user = new User($login, $BD_Field);
 
 if (!$auth_user->id())
     logExit("[auth16.php] login process [Unknown user] User [$login] Password [$password]");
-if ($auth_user->lvl() <= 1)
+if ($auth_user->isBanned() or $auth_user->lvl() <= 1)
     exit("Bad login");
 if (!$auth_user->authenticate($password))
     logExit("[auth16.php] login process [Wrong password] User [$login] Password [$password]");

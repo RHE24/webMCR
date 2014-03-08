@@ -23,7 +23,7 @@ include './pack/encode/encoderPreset.class.php';
 $viewer = new View();
 $viewer->setViewBaseDir(MCR_ROOT . 'install/style/');
 
-$mode = Filter::input('mode');
+$mode = Filter::input('mode'); // cms post key
 if (!$mode) $mode = Filter::input('mode', 'get');
 if (!$mode) $mode = 'usual';
             
@@ -39,6 +39,8 @@ switch ($mode) {
     case 'dle': $main_cms = 'DataLife Engine';  break; 
     case 'wp': $main_cms = 'WordPress';    break;
     case 'joomla': $main_cms = 'Joomla!';  break; 
+    case 'xauth': $main_cms = 'xAuth'; break; 
+    case 'authme': $main_cms = 'AuthMe'; break; 
     default : $mode = 'usual'; break;
 }
 
@@ -425,7 +427,8 @@ switch ($step) {
         else $timezone = false;
 
         $sbuffer = (!empty($_POST['sbuffer'])) ? true : false;
-
+        $default_skin = (!empty($_POST['default_skin'])) ? true : false;
+        
         if (TextBase::StringLen($keywords) > 200)
             $info .= 'Ключевые слова занимают больше 200 символов (' . TextBase::StringLen($keywords) . ').';
         elseif (!$timezone)
@@ -437,7 +440,8 @@ switch ($step) {
             $config['s_keywords'] = $keywords;
             $config['sbuffer'] = $sbuffer;
             $config['timezone'] = $timezone;
-
+            $config['default_skin'] = $default_skin;
+            
             unset($config['tmp_install']);              
             configSave();     
             $step = 4;

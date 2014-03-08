@@ -1,5 +1,6 @@
 <?php if (!defined('MCR')) exit;
-$MCR_LANG = array (
+
+$mcrLocale = array (
   'KB' => 'Кб',
   
   'MALE' => 'Мальчик',
