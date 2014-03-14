@@ -599,6 +599,7 @@ class ControlManager extends View
 
         while ( $line = $result->fetch()) {
             
+            $ban_id = $line['id'];
             $ban_user  = new User((int)$line['user_id']);
             $ban_start = $line['time_start'];
             $ban_end   = $line['ban_until'];

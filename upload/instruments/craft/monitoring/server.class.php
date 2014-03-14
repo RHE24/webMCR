@@ -452,14 +452,14 @@ class Server extends Item
 
         switch ($type) {
             case 'mon':
-            case 'side': include $this->viewer->getView('serverstate_' . $type . '.html');
+            case 'side': include $this->getView('serverstate_' . $type . '.html');
                 break;
             case 'game':
 
                 if ($this->online)
-                    include $this->viewer->getView('serverstate_' . $type . '_online.html');
+                    include $this->getView('serverstate_' . $type . '_online.html');
                 else
-                    include $this->viewer->getView('serverstate_' . $type . '_offline.html');
+                    include $this->getView('serverstate_' . $type . '_offline.html');
 
                 break;
             default: return false;

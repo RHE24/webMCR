@@ -5,5 +5,5 @@
    <td><?php echo $ban_end ?></td>
    <td><?php echo $ban_reason ?></td>
    <td><a onclick="LoadProfile('customp', <?php echo $ban_by->id() ?>); return false" href="#"><?php echo $ban_by->name() ?></a></td>
-   <td><a href="index.php?mode=control&amp;do=userbans&amp;user_delete=<?php echo $ban_user->id() ?>&amp;token_data=<?php echo tokenTool('get') ?>">Удалить</a></td>
+   <td><a href="index.php?mode=control&amp;do=userbans&amp;delete=<?php echo $ban_id ?>&amp;token_data=<?php echo tokenTool('get') ?>">Удалить</a></td>
 </tr>

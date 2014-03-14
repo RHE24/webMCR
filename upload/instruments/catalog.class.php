@@ -386,16 +386,16 @@ class News_Item extends Item
         if (!empty($user) and $user->getPermission('add_news')) {
 
             ob_start();
-            include $this->viewer->getView('news_admin.html');
+            include $this->getView('news_admin.html');
             $admin_buttons = ob_get_clean();
         }
 
         ob_start();
 
         if ($full_text)
-            include $this->viewer->getView('news_full.html');
+            include $this->getView('news_full.html');
         else
-            include $this->viewer->getView('news.html');
+            include $this->getView('news.html');
 
         return ob_get_clean();
     }
@@ -414,7 +414,7 @@ class News_Item extends Item
         $category_link = Rewrite::GetURL(array('category', $category_id), array('', 'cid'));
 
         ob_start();
-        include $this->viewer->getView('news_full_header.html');
+        include $this->getView('news_full_header.html');
         $html = ob_get_clean();
 
         $html .= $this->Show(true);
@@ -424,7 +424,7 @@ class News_Item extends Item
 
         loadTool('comment.class.php');
 
-        $comments = new CommentList($this, $this->link_work, $this->viewer->getSubDir() . 'comments/');
+        $comments = new CommentList($this, $this->link_work, $this->getSubDir() . 'comments/');
         $html .= $comments->Show($comment_list);
 
         if ($this->discus)

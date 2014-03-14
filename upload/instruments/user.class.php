@@ -320,6 +320,7 @@ class User
     {
         global $bd_names;
         
+        if (!$this->exist()) return true;
         if ($this->lvl()) return false;
         
         RefreshBans();
@@ -327,7 +328,7 @@ class User
         $line = getDB()->fetchRow("SELECT COUNT(*) FROM `{$bd_names['user_banning']}` WHERE `user_id`='{$this->id}'", false, 'num');
         if ((int) $line[0]) return true;
         else {
-            $this->changeGroup(2);        
+            $this->changeGroup(1);        
             return false;        
         }
     }

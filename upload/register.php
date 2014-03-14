@@ -36,7 +36,7 @@ if (!$input['method'])
     
 loadTool('ajax.php');
 
-if (!AuthCore::getEncoder()->isCheckOnly())
+if (AuthCore::getEncoder()->isCheckOnly())
     aExit(1, 'Registration is blocked. Used auth script from main CMS');
 
 DBinit('register');

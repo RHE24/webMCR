@@ -203,12 +203,16 @@ if ($do) {
         break;
     case 'userbans':
         
-        $deleteUser = Filter::input('user_delete', 'get', 'int');
+        $deleteUser = Filter::input('delete', 'get', 'int');
         
-        if ($deleteUser and tokenTool('check', false)) {             
-            getDB()->ask("DELETE FROM {$bd_names['user_banning']} WHERE `user_id`='$deleteUser'");
-            $deleteUser = new User($deleteUser, $bd_users['login']);
-            $deleteUser->changeGroup(2);
+        if ($deleteUser and tokenTool('check', false)) {  
+            $line = getDB()->fetchRow("SELECT `user_id` FROM `{$bd_names['user_banning']}` WHERE `id`='$deleteUser'", false, 'num');  
+            if (!$line) break;
+            
+            $ban_user = new User((int) $line[0]);
+            if ($ban_user->exist()) $ban_user->changeGroup(1);          
+            
+            getDB()->ask("DELETE FROM {$bd_names['user_banning']} WHERE `id`='$deleteUser'");
             $info .= lng('USER_UNBANNED');
         }
         
@@ -229,7 +233,8 @@ if ($do) {
                     array(
                         'reason' => $banReason
                     ));
-
+            
+            $ban_user->changeGroup(2); 
             $info .= lng('USER_BANNED');
         }
         

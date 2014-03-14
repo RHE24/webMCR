@@ -45,7 +45,7 @@ function InitJS()
              . '</script>';    
 
     $sd = $site_ways['system'] . 'js/';
-
+    
     $initJs .= ' <script src="'. $sd . 'ajax.js"></script>';
     $initJs .= ' <script src="'. $sd . 'monitoring.js"></script>';
     $initJs .= ' <script src="'. $sd . 'tools.js"></script>';

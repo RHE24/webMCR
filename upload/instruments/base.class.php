@@ -1,7 +1,6 @@
 <?php
-class Item 
+class Item extends View
 {
-    protected $viewer;
     protected $type;
     protected $id;
 
@@ -9,8 +8,8 @@ class Item
 
     public function __construct($id, $type, $db, $style_sd = false)
     {
-        $this->viewer = new View($style_sd);
-
+        parent::View($style_sd);
+        
         $this->id = (int) $id;
         $this->db = $db;
 
@@ -28,11 +27,6 @@ class Item
     public function id()
     {
         return $this->id;
-    }
-
-    public function getViewer() 
-    {
-        return $this->viewer;
     }
     
     public function exist()
@@ -130,6 +124,15 @@ class View
     {
         return self::Get($way, $this->subDir, $this->baseDir);
     }
+    
+    /**
+     * @deprecated since v2.4b 
+     */
+    
+    public function arrowsGenerator($link, $curpage, $itemsnum, $per_page, $prefix = false)
+    {
+        return $this->showArrows($link, $curpage, $itemsnum, $per_page, $prefix);
+    }    
     
     public function showArrows($link, $curpage, $itemsnum, $per_page, $prefix = false)
     {

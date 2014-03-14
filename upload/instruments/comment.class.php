@@ -246,18 +246,18 @@ class Comments_Item extends Item {
         if ($for_user and ( $for_user->getPermission('adm_comm') or $for_user->id() == $this->user_id )) {
 
             ob_start();
-            include $this->viewer->getView('comments_admin.html');
+            include $this->getView('comments_admin.html');
             $admin_buttons = ob_get_clean();
         }
 
         if ($user_female)
-            $female_mark = $this->viewer->showPage('comments_girl.html');
+            $female_mark = $this->showPage('comments_girl.html');
 
         ob_start();
         if ($for_user)
-            include $this->viewer->getView('comments.html');
+            include $this->getView('comments.html');
         else
-            include $this->viewer->getView('comments_unauth.html');
+            include $this->getView('comments_unauth.html');
 
         return ob_get_clean();
     }

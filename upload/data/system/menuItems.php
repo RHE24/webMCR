@@ -84,7 +84,7 @@ $menu_items = array (
       'permission' => -1,
       'active' => false,
       'inner_html' => '',
-    ),    
+    ),
     'control' => 
     array (
       'name' => 'Пользователи',

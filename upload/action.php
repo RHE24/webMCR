@@ -26,7 +26,7 @@ switch ($method) {
             loadTool('upload.class.php');
         elseif ($method == 'profile')
             loadTool('skin.class.php');
-        elseif ($method == 'restore' and !AuthCore::getEncoder()->isCheckOnly())
+        elseif ($method == 'restore' and AuthCore::getEncoder()->isCheckOnly())
             aExit(1, 'Change password is not available');
 
         DBinit('action_' . $method);
