@@ -65,13 +65,18 @@ if ($config['offline'] and (!$user or $user->group() != 3))
     exit(View::ShowStaticPage('site_closed.html'));
 
 if ($user) {
+
+    $player = $user->name();
+    $player_id = $user->id();
+    $player_lvl = $user->lvl();
+    $player_email = $user->email();
+    if (!$player_email) $player_email = lng('NOT_SET');
+    $player_group = $user->getGroupName();
+    $player_money = $user->getMoney();
     
     $user->activity();
     
-    if ($user->group() == 4) {    
-        $player_email = $user->email();        
-        if (!$player_email) $player_email = lng('NOT_SET');
-
+    if ($user->group() == 4) {
         $content_main .= View::ShowStaticPage('profile_verification.html', 'profile/', $player_email);   
     }
 } 
